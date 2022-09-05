@@ -18,3 +18,17 @@ class Post(models.Model):
     post_likes = models.ManyToManyField(
         "users.User", related_name="liked_posts"
     )
+    post_comments = models.ManyToManyField(
+        "users.User",
+        through="posts.Comments",
+        related_name="comments_posts"
+    )
+
+
+class Comments(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
