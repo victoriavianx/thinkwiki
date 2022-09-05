@@ -1,9 +1,10 @@
 from django.db import models
-
+import uuid 
 # Create your models here.
 
 
 class Post(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, )
     title = models.CharField(max_length=60, null=False)
     content = models.TextField(null=False)
     is_editable = models.BooleanField(default=False)
