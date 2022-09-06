@@ -71,6 +71,14 @@ class ContribAddRmvView(generics.UpdateAPIView):
 
         return Response(serializers.data)
         
+class RetrieveUserPostsView(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostCreateListSerializer
+    def filter_queryset(self, queryset):
+        user_id = self.request.query_params.get('id_user')
+        user = get_object_or_404(User, id = user_id)
+        return queryset.filter(owner = user)
+
 
 
 class CommentView(generics.ListCreateAPIView):
