@@ -1,7 +1,11 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
 from categories.models import Categories
 
+
+class UniqueValidationError(APIException):
+    ...
 
 class CreateCategorieSerializer(serializers.ModelSerializer):
     
@@ -10,7 +14,13 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
         fields = [
             "name",
         ]
-        read_only_fields = ["post"]
+
+    def validate_unique_name(self, value: str):
+        if Categories.objects.filter(name=value).exists():
+
+            raise UniqueValidationError()
+
+        return value
 
 
 class ListCategorieSerializer(serializers.ModelSerializer):
