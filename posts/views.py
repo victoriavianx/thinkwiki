@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
+
+from users.models import User
 from .models import Comment, Post
 from .serializers import CommentSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -10,10 +12,14 @@ from django.shortcuts import get_object_or_404
 from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
 from posts.serialyers import PostCreateListSerializer
 
+from rest_framework.response import Response
+
+from posts import serializers
+
 # Create your views here.
 
 class PostCreateListView(generics.ListCreateAPIView):
-    authentication_classes =  [TokenAuthentication]
+
     permission_classes = [PostSafeMethodsPermission]
 
     serializer_class = PostCreateListSerializer
@@ -26,39 +32,49 @@ class PostCreateListView(generics.ListCreateAPIView):
         if category is not None:
             queryset = queryset.filter(category=category)
         return queryset
+    
+    def perform_create(self, serializer):
+        return serializer.save(owner=self.request.user)
 
 
 class PostRetrieveEditDeleteViews(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [TokenAuthentication]
+
     permission_classes = [PostSafeMethodsPermission, PostEditPermission]
 
-    serializer_class = PostCreateListSerializer
-
     queryset = Post.objects.all()
+    serializer_class = PostCreateListSerializer
+    lookup_url_kwarg = "id_post"
 
-    def get_queryset(self):
-        post_id = self.request.query_params.get('id_post')
-        queryset = self.queryset.get(id=post_id)
 
-        return queryset
+    
+class ContribAddRmvView(generics.UpdateAPIView):
 
-class ContribAddRmvView(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [PostSafeMethodsPermission, CollabEditorsListPermission]
 
     queryset = Post.objects.all()
-
-    def get_queryset(self):
+    lookup_url_kwarg = "id_post"
+    serializer_class = PostCreateListSerializer
+    
+    def update(self, request, *args, **kwargs):
         post_id = self.request.query_params.get('id_post')
         contrib_id = self.request.query_params.get('id_contributors')
 
-        queryset = self.queryset.get(id=post_id)
+        post = get_object_or_404(Post, id=post_id)
+        contrib = get_object_or_404(User, id=contrib_id)
+        
+        if contrib not in post.post_collab:
+            post.post_collab.add(contrib)
 
-        return queryset
+        serializers = PostCreateListSerializer(post)
+        serializers.is_valid(raise_exception=True)
+        serializers.save()
+
+        return Response(serializers.data)
+        
 
 
 class CommentView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication]
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     serializer_class = CommentSerializer
