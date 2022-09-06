@@ -1,3 +1,24 @@
-from django.shortcuts import render
+from rest_framework import generics
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-# Create your views here.
+from categories.models import Categories
+from categories.permissions import IsAdminOrReadOnly
+from categories.serializers import (CreateCategorieSerializer,
+                                    ListCategorieSerializer)
+
+from .mixins import SerializerByMethodMixin
+
+
+class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminOrReadOnly]
+
+    queryset = Categories.objects.all()
+
+    serializer_map = {
+        "GET":  ListCategorieSerializer,
+        "POST": CreateCategorieSerializer,
+    }
+
