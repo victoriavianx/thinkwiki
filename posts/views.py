@@ -4,13 +4,12 @@ from rest_framework.authentication import TokenAuthentication
 
 from users.models import User
 from .models import Comment, Post
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, PostCreateListSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
 from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
-from posts.serialyers import PostCreateListSerializer
 
 from rest_framework.response import Response
 
