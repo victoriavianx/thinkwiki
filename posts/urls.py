@@ -8,4 +8,5 @@ urlpatterns = [
     path('posts/str:<id_post>/', views.PostRetrieveEditDeleteViews.as_view()),
     path('posts/str:<id_post>/str:<id_contributors>/', views.ContribAddRmvView.as_view()),
     path('posts/<str:id_post>/comments/', views.CommentView.as_view()),
+    path('posts/<str:id_post>/comments/<str:id_comment>/', views.CommentDetailView.as_view()),
 ]

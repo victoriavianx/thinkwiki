@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
+from posts.permissions import CollabEditorsListPermission, IsOwnerOrAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission
 from posts.serialyers import PostCreateListSerializer
 
 # Create your views here.
@@ -58,7 +58,6 @@ class ContribAddRmvView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CommentView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     serializer_class = CommentSerializer
@@ -72,3 +71,11 @@ class CommentView(generics.ListCreateAPIView):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
 
         return Comment.objects.filter(post=post)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwnerOrAdminOrReadOnly]
+
+    queryset = Comment.objects.all()
+    serializer = CommentSerializer
+    lookup_url_kwarg = "id_post" and "id_comment"
