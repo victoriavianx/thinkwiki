@@ -47,7 +47,7 @@ class PostRetrieveEditDeleteViews(generics.RetrieveUpdateDestroyAPIView):
 
 
     
-class ContribAddRmvView(generics.UpdateAPIView):
+class ContribAddView(generics.UpdateAPIView):
 
     permission_classes = [PostSafeMethodsPermission, CollabEditorsListPermission]
 
@@ -85,6 +85,7 @@ class ContribAddRmvView(generics.UpdateAPIView):
 class ListUserPostsView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateListSerializer
+    permission_classes = [PostSafeMethodsPermission]
     def filter_queryset(self, queryset):
         user_id = self.request.query_params.get('id_user')
         user = get_object_or_404(User, id = user_id)
@@ -92,14 +93,14 @@ class ListUserPostsView(generics.ListAPIView):
 
 
 class RetrieveUserLikedPosts(generics.ListAPIView):
-
+    permission_classes = [PostSafeMethodsPermission]
     def get_queryset(self):
         queryset = self.request.user.liked_posts
         return queryset
 
 
 class UpdateUserLikePost(generics.UpdateAPIView):
-
+    permission_classes = [PostSafeMethodsPermission]
     def perform_update(self, serializer):
         post_id = self.request.query_params.get('id_post')
         post = get_object_or_404(Post, id = post_id)
