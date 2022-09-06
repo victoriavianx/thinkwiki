@@ -1,5 +1,5 @@
 from django.db import models
-import uuid 
+import uuid
 # Create your models here.
 
 
@@ -24,12 +24,12 @@ class Post(models.Model):
     )
     post_comments = models.ManyToManyField(
         "users.User",
-        through="posts.Comments",
+        through="posts.Comment",
         related_name="comments_posts"
     )
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     post = models.ForeignKey("posts.Post", on_delete=models.CASCADE)
