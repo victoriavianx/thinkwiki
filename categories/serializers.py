@@ -11,3 +11,13 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
             "name",
         ]
         read_only_fields = ["post"]
+
+
+class ListCategorieSerializer(serializers.ModelSerializer):
+
+        
+    class Meta:
+        model = Categories
+        fields = [
+            "name",
+        ]
