@@ -49,12 +49,12 @@ class PostRetrieveEditDeleteViews(generics.RetrieveUpdateDestroyAPIView):
     
 class ContribAddView(generics.UpdateAPIView):
 
-    permission_classes = [PostSafeMethodsPermission, CollabEditorsListPermission]
+    permission_classes = [PostSafeMethodsPermission, PostEditPermission]
 
     queryset = Post.objects.all()
-    lookup_url_kwarg = "id_post"
     serializer_class = PostCreateListSerializer
-    
+    lookup_url_kwarg = "id_post"
+
     # def update(self, request, *args, **kwargs):
     #     post_id = self.request.query_params.get('id_post')
     #     contrib_id = self.request.query_params.get('id_contributors')
@@ -72,6 +72,7 @@ class ContribAddView(generics.UpdateAPIView):
     #     return Response(serializers.data)
 
     def perform_update(self, serializer):
+
         post_id = self.request.query_params.get('id_post')
         contrib_id = self.request.query_params.get('id_contributors')
 
@@ -80,7 +81,7 @@ class ContribAddView(generics.UpdateAPIView):
         
         if contrib not in post.post_collab:
             post.post_collab.add(contrib)
-    
+  
         
 class ListUserPostsView(generics.ListAPIView):
     queryset = Post.objects.all()
