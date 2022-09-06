@@ -14,7 +14,7 @@ class Post(models.Model):
         "users.User", on_delete=models.CASCADE, related_name="posts"
     )
     category = models.ForeignKey(
-        "categories.Category", on_delete=models.CASCADE, related_name="posts"
+        "categories.Categories", on_delete=models.CASCADE, related_name="posts"
     )
     post_collab = models.ManyToManyField(
         "users.User", related_name="collab_posts"
