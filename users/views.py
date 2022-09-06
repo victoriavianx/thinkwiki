@@ -32,3 +32,6 @@ class LoginView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({"token": token.key})
+
+class FriendShipAddView(APIView):
+    ...
