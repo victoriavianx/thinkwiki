@@ -14,7 +14,6 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
         fields = [
             "name",
         ]
-        read_only_fields = ["post"]
 
     def validate_unique_name(self, value: str):
         if Categories.objects.filter(name=value).exists():
