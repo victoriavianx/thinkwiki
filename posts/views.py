@@ -55,7 +55,23 @@ class ContribAddRmvView(generics.UpdateAPIView):
     lookup_url_kwarg = "id_post"
     serializer_class = PostCreateListSerializer
     
-    def update(self, request, *args, **kwargs):
+    # def update(self, request, *args, **kwargs):
+    #     post_id = self.request.query_params.get('id_post')
+    #     contrib_id = self.request.query_params.get('id_contributors')
+
+    #     post = get_object_or_404(Post, id=post_id)
+    #     contrib = get_object_or_404(User, id=contrib_id)
+        
+    #     if contrib not in post.post_collab:
+    #         post.post_collab.add(contrib)
+
+    #     serializers = PostCreateListSerializer(post)
+    #     serializers.is_valid(raise_exception=True)
+    #     serializers.save()
+
+    #     return Response(serializers.data)
+
+    def perform_update(self, serializer):
         post_id = self.request.query_params.get('id_post')
         contrib_id = self.request.query_params.get('id_contributors')
 
@@ -64,20 +80,35 @@ class ContribAddRmvView(generics.UpdateAPIView):
         
         if contrib not in post.post_collab:
             post.post_collab.add(contrib)
-
-        serializers = PostCreateListSerializer(post)
-        serializers.is_valid(raise_exception=True)
-        serializers.save()
-
-        return Response(serializers.data)
+    
         
-class RetrieveUserPostsView(generics.ListAPIView):
+class ListUserPostsView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateListSerializer
     def filter_queryset(self, queryset):
         user_id = self.request.query_params.get('id_user')
         user = get_object_or_404(User, id = user_id)
         return queryset.filter(owner = user)
+
+
+class RetrieveUserLikedPosts(generics.ListAPIView):
+
+    def get_queryset(self):
+        queryset = self.request.user.liked_posts
+        return queryset
+
+
+class UpdateUserLikePost(generics.UpdateAPIView):
+
+    def perform_update(self, serializer):
+        post_id = self.request.query_params.get('id_post')
+        post = get_object_or_404(Post, id = post_id)
+        user = self.request.user
+        
+        if user not in post.post_likes:
+            post.post_likes.add(user)
+        else:
+            post.post_likes.remove(user)
 
 
 
