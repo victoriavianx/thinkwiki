@@ -43,3 +43,7 @@ class UserManagementView(UpdateAPIView):
     permission_classes = [IsAdminOwnerOrReadOnly]
     queryset = User.objects.all()
     serializer_class = IsActiveSerializer
+
+class FriendShipAddView(APIView):
+    ...
+
