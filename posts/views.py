@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
+from posts.permissions import CollabEditorsListPermission, PostCollabAdd, PostEditPermission, PostSafeMethodsPermission
 from posts.serializers import PostCreateListSerializer
 
 from rest_framework.response import Response
@@ -47,9 +47,9 @@ class PostRetrieveEditDeleteViews(generics.RetrieveUpdateDestroyAPIView):
 
 
     
-class ContribAddView(generics.UpdateAPIView):
+class ContribView(generics.UpdateAPIView):
 
-    permission_classes = [PostSafeMethodsPermission, PostEditPermission]
+    permission_classes = [PostSafeMethodsPermission, PostCollabAdd]
 
     queryset = Post.objects.all()
     serializer_class = PostCreateListSerializer
@@ -81,6 +81,8 @@ class ContribAddView(generics.UpdateAPIView):
         
         if contrib not in post.post_collab:
             post.post_collab.add(contrib)
+        else:
+            post.post_collab.remove(contrib)
   
         
 class ListUserPostsView(generics.ListAPIView):

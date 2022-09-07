@@ -13,6 +13,11 @@ class PostEditPermission(permissions.BasePermission):
         
         return request.user == obj.owner | request.user.is_superuser | (request.user in obj.post_collab and request.method == 'PATCH')
 
+
+class PostCollabAdd(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.owner | request.user.is_superuser
+
 class CollabEditorsListPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.owner | request.user.is_superuser
