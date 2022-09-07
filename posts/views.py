@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
 
 from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
-from posts.serialyers import PostCreateListSerializer
+from posts.serializers import PostCreateListSerializer
 
 from rest_framework.response import Response
 
