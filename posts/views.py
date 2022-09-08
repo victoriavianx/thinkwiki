@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 
@@ -9,11 +8,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, PostEditPermission, PostSafeMethodsPermission
-
-from rest_framework.response import Response
-
-from posts import serializers
+from posts.permissions import CollabEditorsListPermission, IsOwnerOrAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission
 
 # Create your views here.
 
@@ -22,7 +17,6 @@ class PostCreateListView(generics.ListCreateAPIView):
     permission_classes = [PostSafeMethodsPermission]
 
     serializer_class = PostCreateListSerializer
-    
 
     def get_queryset(self):
         max_users = self.kwargs["num"]
@@ -31,7 +25,7 @@ class PostCreateListView(generics.ListCreateAPIView):
         if category is not None:
             queryset = queryset.filter(category=category)
         return queryset
-    
+
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
 
@@ -45,7 +39,6 @@ class PostRetrieveEditDeleteViews(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = "id_post"
 
 
-    
 class ContribAddView(generics.UpdateAPIView):
 
     permission_classes = [PostSafeMethodsPermission, PostEditPermission]
@@ -60,7 +53,7 @@ class ContribAddView(generics.UpdateAPIView):
 
     #     post = get_object_or_404(Post, id=post_id)
     #     contrib = get_object_or_404(User, id=contrib_id)
-        
+
     #     if contrib not in post.post_collab:
     #         post.post_collab.add(contrib)
 
@@ -77,11 +70,11 @@ class ContribAddView(generics.UpdateAPIView):
 
         post = get_object_or_404(Post, id=post_id)
         contrib = get_object_or_404(User, id=contrib_id)
-        
+
         if contrib not in post.post_collab:
             post.post_collab.add(contrib)
-  
-        
+
+
 class ListUserPostsView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateListSerializer
@@ -105,7 +98,7 @@ class UpdateUserLikePost(generics.UpdateAPIView):
         post_id = self.request.query_params.get('id_post')
         post = get_object_or_404(Post, id = post_id)
         user = self.request.user
-        
+
         if user not in post.post_likes:
             post.post_likes.add(user)
         else:
@@ -128,3 +121,11 @@ class CommentView(generics.ListCreateAPIView):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
 
         return Comment.objects.filter(post=post)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwnerOrAdminOrReadOnly]
+
+    queryset = Comment.objects.all()
+    serializer = CommentSerializer
+    lookup_url_kwarg = "id_post" and "id_comment"
