@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from posts.utils.mixins import SerializerByMethodMixin
@@ -27,7 +26,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         "GET":PostResumeSerializer,
         "POST":PostCreateListSerializer
     }
-    
 
     def get_queryset(self):
         queryset = Post.objects.all().order_by("-created_at")
@@ -35,7 +33,7 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         if category is not None:
             queryset = queryset.filter(category=category)
         return queryset
-    
+
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
 
@@ -53,7 +51,6 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
    
     lookup_url_kwarg = "id_post"
 
-
     
 class ContribView(generics.UpdateAPIView):
 
@@ -62,7 +59,6 @@ class ContribView(generics.UpdateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostResumeSerializer
     lookup_url_kwarg = "id_post"
-   
 
     def perform_update(self, serializer):
         
@@ -136,3 +132,11 @@ class CommentView(generics.ListCreateAPIView):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
 
         return Comment.objects.filter(post=post)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwnerOrAdminOrReadOnly]
+
+    queryset = Comment.objects.all()
+    serializer = CommentSerializer
+    lookup_url_kwarg = "id_post" and "id_comment"

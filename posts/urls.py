@@ -10,5 +10,6 @@ urlpatterns = [
     path('posts/like/<str:id_post>/', views.UpdateUserLikePost.as_view()),
     path('posts/<str:id_post>/<str:id_user>/', views.ContribView.as_view()),
     path('posts/<str:id_post>/comments/', views.CommentView.as_view()),
+    path('posts/<str:id_post>/comments/<str:id_comment>/', views.CommentDetailView.as_view()),
     path('posts/<str:id_post>/', views.PostRetrieveEditDeleteViews.as_view()),
 ]

@@ -1,4 +1,7 @@
 from rest_framework import permissions
+from rest_framework.views import View, Request
+
+from .models import Comment
 
 class PostSafeMethodsPermission(permissions.BasePermission):
     def has_permission(self, request, view):
