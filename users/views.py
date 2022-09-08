@@ -2,13 +2,15 @@
 from ast import NotIn
 from django.contrib.auth import authenticate
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
 from rest_framework.views import APIView, Request, Response, status
 from rest_framework.authtoken.models import Token
 
+from users.permissions import IsAdminOwnerOrReadOnly
+
 from .models import User
 
-from .serializers import UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
+from .serializers import IsActiveSerializer, UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
 
 from friendship.models import Friend, FriendshipRequest
 from rest_framework.authentication import TokenAuthentication
@@ -19,11 +21,11 @@ from friendship.exceptions import AlreadyExistsError, AlreadyFriendsError
 from django.core.exceptions import ObjectDoesNotExist
 
 
-
 class UserView(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    
 class LoginView(APIView):
     queryset = Token.objects.all()
     serializer_class = LoginSerializer
@@ -34,18 +36,15 @@ class LoginView(APIView):
 
         user = authenticate(
             username=serialized_login.validated_data["username"],
-            # email=serialized_login.validated_data["email"],
-            password=serialized_login.validated_data["password"]
+            password=serialized_login.validated_data["password"],
         )
 
         if not user:
-            return Response({"detail": "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({"token": token.key})
-
-
 
 # Views Friend
 class SendFriendRequestView(APIView):
@@ -121,3 +120,16 @@ class ListFriendsView(APIView):
         serializer = ReturnOfPendingRequestsList(listFriends, many=True)
 
         return Response(serializer.data)
+
+class UserDetailView(RetrieveUpdateAPIView):
+    permission_classes = [IsAdminOwnerOrReadOnly]
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
+
+class UserManagementView(UpdateAPIView):
+    permission_classes = [IsAdminOwnerOrReadOnly]
+    queryset = User.objects.all()
+    serializer_class = IsActiveSerializer
+
+class FriendShipAddView(APIView):
+    ...

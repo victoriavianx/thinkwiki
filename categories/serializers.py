@@ -1,16 +1,28 @@
+from posts.serialyers import PostDetailSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
 from categories.models import Categories
 
+
+class UniqueValidationError(APIException):
+    ...
 
 class CreateCategorieSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Categories
         fields = [
-            "name",
+           "id", "name"
         ]
-        read_only_fields = ["post"]
+        read_only_fields = ["id","posts"]
+
+    def validate_unique_name(self, value: str):
+        if Categories.objects.filter(name=value).exists():
+
+            raise UniqueValidationError()
+
+        return value
 
 
 class ListCategorieSerializer(serializers.ModelSerializer):
@@ -20,4 +32,17 @@ class ListCategorieSerializer(serializers.ModelSerializer):
         model = Categories
         fields = [
             "name",
+            "posts",
         ]
+
+
+class ListDetailCategoireSereliazer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = [
+            "name",
+            "posts"
+        ]
+
+    posts = PostDetailSerializer(read_only=True, many = True)
