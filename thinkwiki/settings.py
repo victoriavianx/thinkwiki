@@ -30,6 +30,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,8 +45,8 @@ INSTALLED_APPS = [
     'users',
     'posts',
     'categories',
-    # 'comments',
-    # 'friendship',
+    'comments',
+    'friendship',
 ]
 
 MIDDLEWARE = [
