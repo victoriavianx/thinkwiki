@@ -90,6 +90,13 @@ class IsActiveSerializer(serializers.ModelSerializer):
 
         return instance
 
+class UserListCommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ["id", "username"]
+        read_only_fields = ["id", "username"]
+
 class UserResumeSerializer(serializers.ModelSerializer):
 
     class Meta:

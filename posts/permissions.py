@@ -22,8 +22,18 @@ class PostEditPermission(permissions.BasePermission):
 class PostCollabAdd(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.owner or request.user.is_superuser
+        
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request:Request, view: View, obj: Comment) -> bool:
+        return request.method in permissions.SAFE_METHODS or (request.user == obj.user)
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request:Request, view: View, obj: Comment) -> bool:
+        return request.method in permissions.SAFE_METHODS or (request.user.is_superuser)
+
 
 class CollabEditorsListPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.owner or request.user.is_superuser
-        
