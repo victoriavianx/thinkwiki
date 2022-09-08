@@ -89,3 +89,9 @@ class IsActiveSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class UserResumeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name','last_name', 'username']
