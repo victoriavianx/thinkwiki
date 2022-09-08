@@ -3,12 +3,13 @@ from rest_framework.authentication import TokenAuthentication
 
 from users.models import User
 from .models import Comment, Post
-from .serializers import CommentSerializer, PostCreateListSerializer
+from .mixins import SerializerByMethodMixin
+from .serializers import CommentSerializer, CommentListSerializer, PostCreateListSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, IsOwnerOrAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission
+from posts.permissions import CollabEditorsListPermission, IsOwnerOrReadOnly, IsAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission
 
 # Create your views here.
 
@@ -106,11 +107,14 @@ class UpdateUserLikePost(generics.UpdateAPIView):
 
 
 
-class CommentView(generics.ListCreateAPIView):
+class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    serializer_class = CommentSerializer
+    serializer_map = {
+        "GET": CommentListSerializer,
+        "POST": CommentSerializer,
+    }
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
@@ -124,8 +128,8 @@ class CommentView(generics.ListCreateAPIView):
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsOwnerOrAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly | IsOwnerOrReadOnly]
 
     queryset = Comment.objects.all()
-    serializer = CommentSerializer
+    serializer_class = CommentSerializer
     lookup_url_kwarg = "id_post" and "id_comment"
