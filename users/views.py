@@ -12,6 +12,7 @@ class UserView(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    
 class LoginView(APIView):
     queryset = Token.objects.all()
     serializer_class = LoginSerializer

@@ -8,9 +8,9 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
-            "name",
+           "id", "name"
         ]
-        read_only_fields = ["post"]
+        read_only_fields = ["id","posts"]
 
 
 class ListCategorieSerializer(serializers.ModelSerializer):
@@ -20,4 +20,5 @@ class ListCategorieSerializer(serializers.ModelSerializer):
         model = Categories
         fields = [
             "name",
+            "posts",
         ]

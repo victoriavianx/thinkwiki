@@ -7,4 +7,4 @@ class Categories(models.Model):
     id   = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     name = models.CharField(max_length=125)
 
-    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE,  related_name="categories")
+    # post = models.ForeignKey("posts.Post", on_delete=models.CASCADE,  related_name="categories")

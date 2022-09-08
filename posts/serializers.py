@@ -9,7 +9,8 @@ class PostCreateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
+    
 
 class PostDetailSerializer(serializers.ModelSerializer):
     class Meta:

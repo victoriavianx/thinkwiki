@@ -13,11 +13,13 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ["id", "username", "first_name", "last_name", "last_login", "is_active", "is_superuser", "date_joined", "email", "is_superuser", "password"]
         read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
-        exclude = ["is_staff", "groups", "user_permissions"]
+        # exclude = ["is_staff", "groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
-
+    
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 class UserDetailSerializer(serializers.ModelSerializer):
     # Aqui vou colocar os serializers dos apps relacionados com o user
