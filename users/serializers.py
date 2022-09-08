@@ -4,6 +4,8 @@ from rest_framework.validators import UniqueValidator
 
 from .models import User
 
+from friendship.models import Friend
+
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[UniqueValidator(queryset=User.objects.all(), message="username already exists")]
@@ -22,6 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
 
         return user
+
 
 class UserDetailSerializer(serializers.ModelSerializer):
 
@@ -57,6 +60,19 @@ class UserDetailSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
+
+# Serializers Friend
+class ReturnOfPendingRequestsList(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+
+class PendingRequestsListSerializer(serializers.ModelSerializer):
+    user = ReturnOfPendingRequestsList(read_only=True, source="from_user")
+
+    class Meta:
+        model = Friend
+        fields = ["id", "created", "user"]
 
 class IsActiveSerializer(serializers.ModelSerializer):
 
