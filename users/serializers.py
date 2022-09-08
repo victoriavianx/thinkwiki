@@ -1,3 +1,4 @@
+from dataclasses import fields
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -13,20 +14,19 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "last_login", "is_active", "is_superuser", "date_joined", "email", "is_superuser", "password"]
+        exclude = ["is_staff", "groups", "user_permissions"]
         read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
-        # exclude = ["is_staff", "groups", "user_permissions"]
         extra_kwargs = {"password": {"write_only": True}}
-    
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+
+    def create(self, validated_data: dict) -> User:
+        user = User.objects.create_user(**validated_data)
+
+        return user
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    # Aqui vou colocar os serializers dos apps relacionados com o user
 
     class Meta:
         model = User
-        # Está faltando os campos de "categorias seguidas" e "amigos" porque as models não estão feitas e não sei como vai ser o nome das related_names
         fields = [
             "id",
             "username",
@@ -44,6 +44,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "is_active",
             "is_superuser",
             "posts",
             "comments_posts",
@@ -55,5 +56,36 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
-    # email = serializers.EmailField(write_only=True)
     password = serializers.CharField(write_only=True)
+
+class IsActiveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        read_only_fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_superuser",
+            "posts",
+            "comments_posts",
+            "collab_posts",
+            "liked_posts",
+            "date_joined",
+            "last_login"
+        ]
+        exclude = ["password"]
+
+    def update(self, instance: User, validated_data: dict) -> User:
+        
+        for key, value in validated_data.items():
+            if key != "is_active":
+                continue
+
+            setattr(instance, key, value)
+
+        instance.save()
+
+        return instance

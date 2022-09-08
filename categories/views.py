@@ -12,7 +12,6 @@ from .mixins import SerializerByMethodMixin
 
 class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIView):
 
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAdminOrReadOnly]
 
     queryset = Categories.objects.all()
