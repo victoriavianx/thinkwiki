@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 from posts.permissions import CollabEditorsListPermission, IsOwnerOrReadOnly, IsAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
 
-from posts.serializers import PostCreateListSerializer
+from posts.serializers import PostCreateListSerializer, CommentListSerializer
 
 from rest_framework.response import Response
 

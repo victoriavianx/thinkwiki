@@ -1,4 +1,4 @@
-from posts.serialyers import PostDetailSerializer
+# from posts.serializers import PostDetailSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
@@ -31,8 +31,9 @@ class ListCategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
+            "id",
             "name",
-            "posts",
+            # "posts",
         ]
 
 
@@ -41,8 +42,9 @@ class ListDetailCategoireSereliazer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
+            "id",
             "name",
-            "posts"
+            # "posts"
         ]
 
-    posts = PostDetailSerializer(read_only=True, many = True)
+    # posts = PostDetailSerializer(read_only=True, many = True)
