@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
@@ -33,7 +32,7 @@ class ListCategorieSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "posts",
+        
         ]
 
 
@@ -44,7 +43,5 @@ class ListDetailCategoireSereliazer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "posts"
         ]
-
 
