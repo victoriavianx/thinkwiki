@@ -13,6 +13,7 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
+            "id",
             "name",
         ]
 
@@ -30,6 +31,7 @@ class ListCategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
+            "id"
             "name",
         ]
 
@@ -39,8 +41,18 @@ class ListDetailCategoireSereliazer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = [
+            "id",
             "name",
             "posts"
         ]
 
     posts = PostDetailSerializer(read_only=True, many = True)
+
+class UpdateCategorieSerializer(serializers.ModelSerializer):
+
+        
+    class Meta:
+        model = Categories
+        fields = [
+            "name",
+        ]

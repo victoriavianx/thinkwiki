@@ -8,7 +8,8 @@ from categories.models import Categories
 from categories.permissions import IsAdminOrReadOnly, IsOwner
 from categories.serializers import (CreateCategorieSerializer,
                                     ListCategorieSerializer,
-                                    ListDetailCategoireSereliazer)
+                                    ListDetailCategoireSereliazer,
+                                    UpdateCategorieSerializer)
 
 from .mixins import SerializerByMethodMixin
 
@@ -25,13 +26,18 @@ class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIVi
     }
 
 
-class ListDetailViews(generics.RetrieveUpdateDestroyAPIView):
+class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
     
     permission_classes = [IsAdminOrReadOnly]
     
 
     serializer_class = ListDetailCategoireSereliazer
     queryset = Categories.objects.all()
+
+    serializer_map = {
+        "GET":  ListDetailCategoireSereliazer,
+        "PATCH": UpdateCategorieSerializer,
+    }
     
     lookup_url_kwarg = "id_category"
 
@@ -48,7 +54,7 @@ class UpdateUserCategoryFollowed(generics.UpdateAPIView):
     permission_classes = [IsOwner]
 
     lookup_url_kwarg = "id_category"
-    
+
     def perform_update(self, serializer):
         category_id = self.kwargs.get("id_category")
         category = get_object_or_404(Categories, id = category_id)
