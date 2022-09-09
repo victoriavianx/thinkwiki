@@ -11,7 +11,7 @@ from categories.serializers import (CreateCategorieSerializer,
                                     ListDetailCategoireSereliazer,
                                     UpdateCategorieSerializer)
 
-from .mixins import SerializerByMethodMixin
+from categories.mixins import SerializerByMethodMixin
 
 
 class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIView):
