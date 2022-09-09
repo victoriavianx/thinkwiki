@@ -9,7 +9,7 @@ from categories.serializers import (CreateCategorieSerializer,
                                     ListCategorieSerializer,
                                     ListDetailCategoireSereliazer)
 
-from .mixins import SerializerByMethodMixin
+from categories.mixins import SerializerByMethodMixin
 
 
 class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIView):

@@ -1,8 +1,8 @@
-from rest_framework import serializers
 from categories.serializers import CreateCategorieSerializer
+from rest_framework import serializers
 
 from posts.models import Post
-from .models import Comment
+from posts.models import Comment
 
 from users.serializers import UserSerializer, UserListCommentSerializer, UserDetailSerializer, UserResumeSerializer
 
@@ -24,24 +24,6 @@ class PostUpdateSerializer(serializers.ModelSerializer):
         fields = ["id","title", "content", "created_at", "updated_at","category"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-class CommentSerializer(serializers.ModelSerializer):
-    id_user = UserSerializer(read_only=True)
-    id_post = PostCreateListSerializer(read_only=True)
-
-    class Meta:
-        model = Comment
-        fields = ["id", "id_user", "id_post", "comment", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
-
-
-class CommentListSerializer(serializers.ModelSerializer):
-    user = UserListCommentSerializer(read_only=True)
-    id_post = PostCreateListSerializer(read_only=True)
-
-    class Meta:
-        model = Comment
-        fields = ["id", "id_post", "comment", "created_at", "updated_at", "user"]
-        read_only_fields = ["id", "created_at", "updated_at"]
         
 
 class CommentResumeSerializer(serializers.ModelSerializer):
@@ -70,3 +52,23 @@ class PostResumeSerializer(serializers.ModelSerializer):
     
     def get_likes(self, obj):
         return len(obj.post_likes.all())
+
+class CommentSerializer(serializers.ModelSerializer):
+    id_user = UserSerializer(read_only=True)
+    id_post = PostCreateListSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "id_user", "id_post", "comment", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    user = UserListCommentSerializer(read_only=True)
+    id_post = PostCreateListSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "id_post", "comment", "created_at", "updated_at", "user"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+

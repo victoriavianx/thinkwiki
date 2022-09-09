@@ -3,23 +3,23 @@ from rest_framework.authentication import TokenAuthentication
 from posts.utils.mixins import SerializerByMethodMixin
 from rest_framework.views import Response, status
 from users.models import User
-from .models import Comment, Post
+from posts.models import Comment, Post
 
-from .mixins import SerializerByMethodMixin
+from posts.mixins import SerializerByMethodMixin
 
-from .serializers import CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
+from posts.serializers import CommentListSerializer, CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, IsOwnerOrReadOnly, IsAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
+from posts.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
 
 from posts.serializers import PostCreateListSerializer
 
 from rest_framework.response import Response
 
-from posts import serializers
+
 
 
 # Create your views here.
