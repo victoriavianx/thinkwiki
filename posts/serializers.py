@@ -6,6 +6,22 @@ from .models import Comment
 
 from users.serializers import UserSerializer, UserListCommentSerializer, UserDetailSerializer, UserResumeSerializer
 
+
+class CommentResumeSerializer(serializers.ModelSerializer):
+    user = UserResumeSerializer(read_only=True)
+    class Meta:
+        model = Comment
+        fields = ["id", "user", "comment", "created_at", "updated_at"]
+
+class PostCreateListSerializer(serializers.ModelSerializer):
+    post_collab = UserResumeSerializer(read_only=True, many=True)
+    post_likes = UserResumeSerializer(read_only=True, many=True)
+    post_comments = CommentResumeSerializer(read_only=True, many=True)
+    class Meta:
+        model = Post
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
+
 class PostDetailSerializer(serializers.ModelSerializer):
     owner = UserDetailSerializer()
     post_collab = UserResumeSerializer(read_only=True, many=True)
@@ -41,24 +57,7 @@ class CommentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ["id", "id_post", "comment", "created_at", "updated_at", "user"]
-        read_only_fields = ["id", "created_at", "updated_at"]
-        
-
-class CommentResumeSerializer(serializers.ModelSerializer):
-    user = UserResumeSerializer(read_only=True)
-    class Meta:
-        model = Comment
-        fields = ["id", "user", "comment", "created_at", "updated_at"]
-        
-
-class PostCreateListSerializer(serializers.ModelSerializer):
-    post_collab = UserResumeSerializer(read_only=True, many=True)
-    post_likes = UserResumeSerializer(read_only=True, many=True)
-    post_comments = CommentResumeSerializer(read_only=True, many=True)
-    class Meta:
-        model = Post
-        fields = "__all__"
-        read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
+        read_only_fields = ["id", "created_at", "updated_at"]    
 
 class PostResumeSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField(read_only=True)
