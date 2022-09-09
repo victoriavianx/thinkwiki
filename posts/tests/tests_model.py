@@ -45,22 +45,22 @@ class ProductTest(TestCase):
             "title": "Teste",
             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "is_editable":True,
-            "category":cls.category_create
+            "category":cls.category_create,
+            "owner":cls.common
         }
 
         cls.post = Post.objects.create(**cls.post_template)
-        cls.post.owner = cls.common
-        cls.post.category = cls.category_create
+   
 
     def test_post_fields(self):
         self.assertEqual(self.post_template['title'], self.post.title)
         self.assertEqual(self.post_template['content'], self.post.content)
         self.assertEqual(self.post_template['is_editable'], self.post.is_editable)
         self.assertEqual(self.post_template['category'], self.post.category)
-        self.assertContains(self.post.id)
+
 
     def test_post_title_length(self):
-        user = User.objects.get(id = self.common.id)
-        max_length = user._meta.get_field('title').max_length
+        post = Post.objects.get(id = self.post.id)
+        max_length = post._meta.get_field('title').max_length
         self.assertEquals(max_length, 60)
 

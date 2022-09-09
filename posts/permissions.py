@@ -37,3 +37,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class CollabEditorsListPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.owner or request.user.is_superuser
+
+class LikePermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_anonymous == True:
+                return False
+        return request.user.is_authenticated

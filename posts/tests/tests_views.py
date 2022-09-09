@@ -47,10 +47,15 @@ class PostCreateListViewTest(APITestCase):
             "title": "Teste",
             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "is_editable":True,
-            "category":cls.category_create
+            "category":cls.category_create.id
         }
 
-        cls.missing_post_template = {}
+        cls.missing_post_template = {
+            "title": "Teste",
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            "is_editable":True,
+            "category": "3c0b61b6-a1b4-419c-9480-04e60aaaa0b9"
+        }
 
         cls.base_url = '/api/posts/'
         cls.create_url = '/api/users/'
@@ -58,8 +63,8 @@ class PostCreateListViewTest(APITestCase):
     def setUp(self) -> None:
         self.common = self.client.post(self.create_url, self.account_common)
         self.common2 = self.client.post(self.create_url, self.account_common2)
-        self.user = User.objects.get(id=self.common['id'])
-        self.user2 = User.objects.get(id=self.common2['id'])
+        self.user = User.objects.get(id=self.common.data['id'])
+        self.user2 = User.objects.get(id=self.common2.data['id'])
         token = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
 
@@ -80,7 +85,6 @@ class PostCreateListViewTest(APITestCase):
         )
 
         response = self.client.post(self.base_url, self.post_template)
-
         result_status_code = response.status_code
 
         self.created_post = response.data
@@ -96,14 +100,13 @@ class PostCreateListViewTest(APITestCase):
             self.assertIn(expected_field, response.data)
         
         self.assertEqual(response.data['is_editable'], True)
-        self.assertEqual(response.data['owner'], self.common)
-        self.assertEqual(response.data['category'], self.category_create)
+        self.assertEqual(response.data['category'], self.category_create.id)
 
     def test_fail_create_post(self):
-        expected_status_code = 404
+        expected_status_code = 400
 
         expected_return_fields = (
-            "details",   
+            "category",   
         )
 
         response = self.client.post(self.base_url, self.missing_post_template)
@@ -162,7 +165,7 @@ class PostCreateListViewTest(APITestCase):
             'post_likes',
             'post_comments'
         )
-        category_id = self.category_create.data['id']
+        category_id = self.category_create.id
         response = self.client.get(f'{self.base_url}categories/{category_id}/')
 
         for post in response.data['results']:
@@ -171,6 +174,29 @@ class PostCreateListViewTest(APITestCase):
 
         result_status_code = response.status_code   
         self.assertEqual(expected_status_code, result_status_code)
+
+    def test_fail_create_post_missing_auth(self):
+        expected_status_code = 401
+
+        expected_return_fields = (
+            "detail",   
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f'')
+        response = self.client.post(self.base_url, self.missing_post_template)
+
+        result_status_code = response.status_code
+
+        self.created_post = response.data
+
+        response_len = len(response.data)
+
+        expected_response_len = len(expected_return_fields)
+
+        self.assertEqual(expected_status_code, result_status_code)
+        self.assertEqual(expected_response_len, response_len)
+
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
 
 class RetrieveEditDeleteViewTest(APITestCase):
     @classmethod
@@ -211,7 +237,7 @@ class RetrieveEditDeleteViewTest(APITestCase):
             "title": "Teste",
             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "is_editable":True,
-            "category":cls.category_create
+            "category":cls.category_create.id
         }
         cls.update_template = {
             "title": "Teste Patch",
@@ -225,8 +251,8 @@ class RetrieveEditDeleteViewTest(APITestCase):
     def setUp(self) -> None:
         self.common = self.client.post(self.create_url, self.account_common)
         self.common2 = self.client.post(self.create_url, self.account_common2)
-        self.user = User.objects.get(id=self.common['id'])
-        self.user2 = User.objects.get(id=self.common2['id'])
+        self.user = User.objects.get(id=self.common.data['id'])
+        self.user2 = User.objects.get(id=self.common2.data['id'])
         token = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
         self.post_response = self.client.post(self.base_url, self.post_template)
@@ -260,9 +286,9 @@ class RetrieveEditDeleteViewTest(APITestCase):
         self.assertEqual(expected_response_len, response_len)
     
     def test_FailRetrievePostView(self):
-        expected_status_code = 400
+        expected_status_code = 404
         expected_return_fields = (
-            "details", 
+            "detail", 
         )
         post_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
         response = self.client.get(f'{self.base_url + post_id}/')
@@ -301,22 +327,21 @@ class RetrieveEditDeleteViewTest(APITestCase):
 
     def test_DeletePostView(self):
         expected_status_code = 204
-        expected_return_fields = ()       
+          
 
         post_id = self.post_response_delete.data['id']
         response = self.client.delete(f'{self.base_url + post_id}/')
         result_status_code = response.status_code
-        response_len = len(response.data)
-        expected_response_len = len(expected_return_fields)
+      
+        
 
         
         self.assertEqual(expected_status_code, result_status_code)
-        self.assertEqual(expected_response_len, response_len)
     
     def test_failDeletePostView(self):
         expected_status_code = 403
         expected_return_fields = (
-            "details",
+            "detail",
         )
 
         token = Token.objects.get_or_create(user=self.user2)
@@ -338,7 +363,7 @@ class RetrieveEditDeleteViewTest(APITestCase):
     def test_FailUpdatePostView(self):
         expected_status_code = 403
         expected_return_fields = (
-            "details",
+            "detail",
         )
 
         token = Token.objects.get_or_create(user=self.user2)
@@ -395,7 +420,7 @@ class RetrieveUserViewTest(APITestCase):
             "title": "Teste",
             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "is_editable":True,
-            "category":cls.category_create
+            "category":cls.category_create.id
         }
         cls.update_template = {
             "title": "Teste Patch",
@@ -409,8 +434,8 @@ class RetrieveUserViewTest(APITestCase):
     def setUp(self) -> None:
         self.common = self.client.post(self.create_url, self.account_common)
         self.common2 = self.client.post(self.create_url, self.account_common2)
-        self.user = User.objects.get(id=self.common['id'])
-        self.user2 = User.objects.get(id=self.common2['id'])
+        self.user = User.objects.get(id=self.common.data['id'])
+        self.user2 = User.objects.get(id=self.common2.data['id'])
         token = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
         self.post_response = self.client.post(self.base_url, self.post_template)
@@ -420,16 +445,12 @@ class RetrieveUserViewTest(APITestCase):
         expected_status_code = 200
         expected_return_fields = (
             "id", 
-            "title", 
-            "content", 
-            "is_editable", 
+            "title",  
             "created_at", 
             "updated_at", 
-            "owner", 
             "category",
             "post_collab",
-            'post_likes',
-            'post_comments'
+            "likes"
         )
         common_user_id = self.common.data['id']
         response = self.client.get(f'{self.base_url}users/{common_user_id}/')
@@ -442,9 +463,9 @@ class RetrieveUserViewTest(APITestCase):
         self.assertEqual(expected_status_code, result_status_code)
 
     def test_FailRetrieveUserPostView(self):
-        expected_status_code = 400
+        expected_status_code = 404
         expected_return_fields = (
-            "details", 
+            "detail", 
         )
         common_user_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
         response = self.client.get(f'{self.base_url + common_user_id}/')
@@ -457,6 +478,7 @@ class RetrieveUserViewTest(APITestCase):
         self.assertEqual(expected_status_code, result_status_code)
 
 class RetrieveUserLikedPostsViewTest(APITestCase):
+    @classmethod
     def setUpTestData(cls) -> None:
         cls.account_adm = {
             "username": "teste adm",
@@ -481,21 +503,15 @@ class RetrieveUserLikedPostsViewTest(APITestCase):
             "last_name": "Comum2",
             "password": "1234",
         }   
-        
-
-        
+                
         cls.adm = User.objects.create_superuser(**cls.account_adm)
+
         cls.category  = {
 	        "name":"Filmes"
         }
+        
         cls.category_create = Categories.objects.create(**cls.category)
 
-        cls.post_template = {
-            "title": "Teste",
-            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-            "is_editable":True,
-            "category":cls.category_create
-        }
         cls.update_template = {
             "title": "Teste Patch",
         }
@@ -508,12 +524,60 @@ class RetrieveUserLikedPostsViewTest(APITestCase):
     def setUp(self) -> None:
         self.common = self.client.post(self.create_url, self.account_common)
         self.common2 = self.client.post(self.create_url, self.account_common2)
-        self.user = User.objects.get(id=self.common['id'])
-        self.user2 = User.objects.get(id=self.common2['id'])
+        self.user = User.objects.get(id=self.common.data['id'])
+        self.user2 = User.objects.get(id=self.common2.data['id'])
+        self.post_template = {
+            "title": "Teste",
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            "is_editable":True,
+            "category":self.category_create.id,
+            "owner":self.common
+        }
+
+
         token = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
         self.post_response = self.client.post(self.base_url, self.post_template)
         self.post_response_delete = self.client.post(self.base_url, self.post_template)
 
     def test_retrieve_user_liked_posts_view(self):
-        ...
+        expected_status_code = 200
+        expected_return_fields = (
+            "id", 
+            "title", 
+            "content", 
+            "is_editable", 
+            "created_at", 
+            "updated_at", 
+            "owner", 
+            "category",
+            "post_collab",
+            'post_likes',
+            'post_comments'
+        )
+        response = self.client.get(f'{self.base_url}like/')
+        result_status_code = response.status_code
+        
+        for post in response.data['results']:
+            if post:
+                for expected_field in expected_return_fields:
+                    self.assertIn(expected_field, post)
+
+        result_status_code = response.status_code   
+        self.assertEqual(expected_status_code, result_status_code)
+      
+    def test_fail_retrieve_user_liked_posts_view(self):
+        expected_status_code = 401
+        expected_return_fields = (
+            "detail", 
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f'')
+        response = self.client.get(f'{self.base_url}like/')
+        result_status_code = response.status_code
+
+      
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
+
+        result_status_code = response.status_code   
+        self.assertEqual(expected_status_code, result_status_code)

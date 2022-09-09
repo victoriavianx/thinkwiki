@@ -32,7 +32,6 @@ class ListCategorieSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-        
         ]
 
 
@@ -45,3 +44,8 @@ class ListDetailCategoireSereliazer(serializers.ModelSerializer):
             "name",
         ]
 
+class UpdateCategorieSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = ["id", "name"]
