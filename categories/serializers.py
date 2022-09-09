@@ -12,9 +12,7 @@ class CreateCategorieSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Categories
-        fields = [
-           "id", "name"
-        ]
+        fields = ["id", "name"]
         read_only_fields = ["id","posts"]
 
     def validate_unique_name(self, value: str):
@@ -33,7 +31,6 @@ class ListCategorieSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            # "posts",
         ]
 
 
@@ -44,7 +41,10 @@ class ListDetailCategoireSereliazer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            # "posts"
         ]
 
-    # posts = PostDetailSerializer(read_only=True, many = True)
+class UpdateCategorieSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = ["id", "name"]
