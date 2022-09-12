@@ -257,8 +257,10 @@ class RetrieveEditDeleteViewTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
         self.post_response = self.client.post(self.base_url, self.post_template)
         self.post_response_delete = self.client.post(self.base_url, self.post_template)
+        self.post_response_delete2 = self.client.post(self.base_url, self.post_template)
+        self.addCollab_response = self.client.patch(f'{self.base_url + self.post_response.data["id"]}/{self.user2.id}/')
     
-    def test_RetrievePostView(self):
+    def test_Retrieve_PostView(self):
         expected_status_code = 200
         expected_return_fields = (
             "id", 
@@ -284,13 +286,27 @@ class RetrieveEditDeleteViewTest(APITestCase):
         
         self.assertEqual(expected_status_code, result_status_code)
         self.assertEqual(expected_response_len, response_len)
-    
-    def test_FailRetrievePostView(self):
-        expected_status_code = 404
+
+    def test_Retrieve_PostView_adm(self):
+        expected_status_code = 200
         expected_return_fields = (
-            "detail", 
+            "id", 
+            "title", 
+            "content", 
+            "is_editable", 
+            "created_at", 
+            "updated_at", 
+            "owner", 
+            "category",
+            "post_collab",
+            'post_likes',
+            'post_comments'
         )
-        post_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
+
+        token = Token.objects.get_or_create(user=self.adm)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
+
+        post_id = self.post_response.data['id']
         response = self.client.get(f'{self.base_url + post_id}/')
         result_status_code = response.status_code
         response_len = len(response.data)
@@ -302,7 +318,7 @@ class RetrieveEditDeleteViewTest(APITestCase):
         self.assertEqual(expected_status_code, result_status_code)
         self.assertEqual(expected_response_len, response_len)
 
-    def test_UpdatePostView(self):
+    def test_Edit_PostView(self):
         expected_status_code = 200
         expected_return_fields = (
             "id", 
@@ -325,20 +341,58 @@ class RetrieveEditDeleteViewTest(APITestCase):
         self.assertEqual(expected_status_code, result_status_code)
         self.assertEqual(expected_response_len, response_len)
 
-    def test_DeletePostView(self):
-        expected_status_code = 204
-          
+    def test_Edit_PostView_adm(self):
+        expected_status_code = 200
+        expected_return_fields = (
+            "id", 
+            "title", 
+            "content",  
+            "created_at", 
+            "updated_at", 
+            "category",
+        )
+        token = Token.objects.get_or_create(user=self.adm)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
 
-        post_id = self.post_response_delete.data['id']
-        response = self.client.delete(f'{self.base_url + post_id}/')
+        post_id = self.post_response.data['id']
+        response = self.client.patch(f'{self.base_url + post_id}/', self.update_template)
         result_status_code = response.status_code
-      
-        
+        response_len = len(response.data)
+        expected_response_len = len(expected_return_fields)
 
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
         
         self.assertEqual(expected_status_code, result_status_code)
-    
-    def test_failDeletePostView(self):
+        self.assertEqual(expected_response_len, response_len)
+
+    def test_Edit_PostView_collab(self):
+        expected_status_code = 200
+        expected_return_fields = (
+            "id", 
+            "title", 
+            "content",  
+            "created_at", 
+            "updated_at", 
+            "category",
+        )
+       
+        token = Token.objects.get_or_create(user=self.user2)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
+
+        post_id = self.post_response.data['id']
+        response = self.client.patch(f'{self.base_url + post_id}/', self.update_template)
+        result_status_code = response.status_code
+        response_len = len(response.data)
+        expected_response_len = len(expected_return_fields)
+
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
+        
+        self.assertEqual(expected_status_code, result_status_code)
+        self.assertEqual(expected_response_len, response_len)
+
+    def test_fail_DeletePostView_not_owner(self):
         expected_status_code = 403
         expected_return_fields = (
             "detail",
@@ -359,12 +413,16 @@ class RetrieveEditDeleteViewTest(APITestCase):
         
         self.assertEqual(expected_status_code, result_status_code)
         self.assertEqual(expected_response_len, response_len)
-    
-    def test_FailUpdatePostView(self):
+
+    def test_fail_Edit_PostView_collab(self):
         expected_status_code = 403
         expected_return_fields = (
             "detail",
         )
+        owner_token = Token.objects.get_or_create(user=self.user)
+        owner_auth = self.client.credentials(HTTP_AUTHORIZATION=f'Token {owner_token[0].key}')
+
+        remove_from_collab = self.client.patch(f'{self.base_url + self.post_response.data["id"]}/{self.user2.id}/')
 
         token = Token.objects.get_or_create(user=self.user2)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
@@ -380,6 +438,78 @@ class RetrieveEditDeleteViewTest(APITestCase):
         
         self.assertEqual(expected_status_code, result_status_code)
         self.assertEqual(expected_response_len, response_len)
+
+    def test_Delete_PostView(self):
+            expected_status_code = 204
+            
+
+            post_id = self.post_response_delete.data['id']
+            response = self.client.delete(f'{self.base_url + post_id}/')
+            result_status_code = response.status_code
+        
+            
+
+            
+            self.assertEqual(expected_status_code, result_status_code)
+   
+    def test_Delete_PostView_adm(self):
+        expected_status_code = 204
+        
+        token = Token.objects.get_or_create(user=self.adm)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
+        post_id = self.post_response_delete2.data['id']
+        response = self.client.delete(f'{self.base_url + post_id}/')
+        result_status_code = response.status_code
+                 
+                      
+        self.assertEqual(expected_status_code, result_status_code)
+
+    def test_fail_RetrievePostView_not_found(self):
+        expected_status_code = 404
+        expected_return_fields = (
+            "detail", 
+        )
+        post_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
+        response = self.client.get(f'{self.base_url + post_id}/')
+        result_status_code = response.status_code
+        response_len = len(response.data)
+        expected_response_len = len(expected_return_fields)
+
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
+        
+        self.assertEqual(expected_status_code, result_status_code)
+        self.assertEqual(expected_response_len, response_len)
+
+    def test_Fail_EditPostView_not_found(self):
+        expected_status_code = 404
+        expected_return_fields = (
+            "detail",
+        )
+
+        post_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
+        response = self.client.patch(f'{self.base_url + post_id}/', self.update_template)
+        result_status_code = response.status_code
+        response_len = len(response.data)
+        expected_response_len = len(expected_return_fields)
+
+        for expected_field in expected_return_fields:
+            self.assertIn(expected_field, response.data)
+        
+        self.assertEqual(expected_status_code, result_status_code)
+        self.assertEqual(expected_response_len, response_len)
+
+    def test_fail_DeletePostView_not_found(self):
+        expected_status_code = 404
+        expected_return_fields = (
+            "detail",
+        )
+
+        post_id = "e9361362-8cf0-4ac0-9129-a6f941baOO23"
+        response = self.client.delete(f'{self.base_url + post_id}/', self.update_template)
+        result_status_code = response.status_code
+        response_len = len(response.data)
+        expected_response_len = len(expected_return_fields)
 
 class RetrieveUserViewTest(APITestCase):
     @classmethod
@@ -581,3 +711,113 @@ class RetrieveUserLikedPostsViewTest(APITestCase):
 
         result_status_code = response.status_code   
         self.assertEqual(expected_status_code, result_status_code)
+
+# class CollaboratorViewTest(APITestCase):
+#     def setUpTestData(cls) -> None:
+#         cls.account_adm = {
+#             "username": "teste adm",
+#             "email": "testeAdm@mail.com",
+#             "first_name": "Teste",
+#             "last_name": "Adm",
+#             "password": "1234",
+#         }
+
+#         cls.account_common = {
+#             "username": "teste comum",
+#             "email": "testeComum@mail.com",
+#             "first_name": "Teste",
+#             "last_name": "Comum",
+#             "password": "1234",
+#         }
+
+#         cls.account_common2 = {
+#             "username": "teste comum2",
+#             "email": "testeComum2@mail.com",
+#             "first_name": "Teste",
+#             "last_name": "Comum2",
+#             "password": "1234",
+#         }   
+                
+#         cls.adm = User.objects.create_superuser(**cls.account_adm)
+
+#         cls.category  = {
+# 	        "name":"Filmes"
+#         }
+        
+#         cls.category_create = Categories.objects.create(**cls.category)
+
+#         cls.base_url = '/api/posts/'
+#         cls.create_url = '/api/users/'
+        
+        
+#     def setUp(self) -> None:
+#         self.common = self.client.post(self.create_url, self.account_common)
+#         self.common2 = self.client.post(self.create_url, self.account_common2)
+#         self.adminResponse = self.client.post(self.create_url, self.account_adm)
+#         self.user = User.objects.get(id=self.common.data['id'])
+#         self.user2 = User.objects.get(id=self.common2.data['id'])
+#         self.post_template = {
+#             "title": "Teste",
+#             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+#             "is_editable":True,
+#             "category":self.category_create.id,
+#             "owner":self.common
+#         }
+
+
+#         token = Token.objects.get_or_create(user=self.user)
+#         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
+#         self.post_response = self.client.post(self.base_url, self.post_template)
+#         self.post_response_delete = self.client.post(self.base_url, self.post_template)
+
+#     def test_add_collab(self):
+#         expected_status_code = 200
+#         expected_return_fields = {
+#             "id",
+#             "title",
+#             "created_at",
+#             "updated_at",
+#             "category",
+#             "post_collab",
+#             "likes"
+#         }
+#         client2_id = self.common2.data['id']
+#         post_id = self.post_response.data['id']
+#         response = self.client.patch(f'{self.base_url + post_id}/{client2_id}/')
+#         result_status_code = response.status_code
+#         response_len = len(response.data)
+#         expected_response_len = len(expected_return_fields)
+
+#         for expected_field in expected_return_fields:
+#             self.assertIn(expected_field, response.data)
+        
+#         self.assertEqual(expected_status_code, result_status_code)
+#         self.assertEqual(expected_response_len, response_len)
+
+#     def test_add_collab_adm(self):
+#         expected_status_code = 200
+#         expected_return_fields = {
+#             "id",
+#             "title",
+#             "created_at",
+#             "updated_at",
+#             "category",
+#             "post_collab",
+#             "likes"
+#         }
+#         token = Token.objects.get_or_create(user=self.adm)
+#         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token[0].key}')
+#         client2_id = self.common2.data['id']
+#         post_id = self.post_response.data['id']
+#         response = self.client.patch(f'{self.base_url + post_id}/{client2_id}/')
+#         result_status_code = response.status_code
+#         response_len = len(response.data)
+#         expected_response_len = len(expected_return_fields)
+
+#         for expected_field in expected_return_fields:
+#             self.assertIn(expected_field, response.data)
+        
+#         self.assertEqual(expected_status_code, result_status_code)
+#         self.assertEqual(expected_response_len, response_len)
+#         self.assertIn(self.user2, self.adm.post_collab)
+
