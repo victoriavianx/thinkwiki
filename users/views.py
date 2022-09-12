@@ -81,6 +81,7 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
             friend_request.accept()
         else:
             friend_request.reject()
+            friend_request.delete()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -102,7 +103,7 @@ class ListPendingRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        friendship_request = Friend.objects.unread_requests(user=request.user)
+        friendship_request = Friend.objects.unrejected_requests(user=request.user)
 
         serializer = PendingRequestsListSerializer(friendship_request, many=True)
     
@@ -134,6 +135,3 @@ class UserManagementDetailView(UpdateAPIView):
     permission_classes = [IsAdminOrOwner]
     queryset = User.objects.all()
     serializer_class = IsActiveSerializer
-
-class FriendShipAddView(APIView):
-    ...
