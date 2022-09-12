@@ -125,7 +125,6 @@ class UpdateUserLikePost(generics.UpdateAPIView):
 
 
 class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     serializer_map = {
@@ -141,7 +140,7 @@ class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
 
-        return Comment.objects.filter(post=post)
+        return Comment.objects.filter(post=post).order_by("-created_at")
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
