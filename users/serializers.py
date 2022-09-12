@@ -16,8 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        exclude = ["is_staff", "groups", "user_permissions"]
-        read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
+        exclude = ["is_active", "is_staff", "groups", "user_permissions"]
+        read_only_fields = ["id", "date_joined", "is_superuser", "last_login"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data: dict) -> User:
@@ -36,7 +36,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
-            "is_active",
             "is_superuser",
             "posts",
             "comments_posts",
@@ -47,7 +46,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "is_active",
             "is_superuser",
             "posts",
             "comments_posts",

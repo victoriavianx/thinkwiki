@@ -2,11 +2,11 @@
 from ast import NotIn
 from django.contrib.auth import authenticate
 
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.views import APIView, Request, Response, status
 from rest_framework.authtoken.models import Token
 
-from users.permissions import IsAdminOwnerOrReadOnly
+from users.permissions import IsAdminOrOwner, IsAdminOwnerOrReadOnly
 
 from .models import User
 
@@ -14,7 +14,7 @@ from .serializers import IsActiveSerializer, UserSerializer, UserDetailSerialize
 
 from friendship.models import Friend, FriendshipRequest
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 import ipdb
 from django.shortcuts import get_object_or_404
 from friendship.exceptions import AlreadyExistsError, AlreadyFriendsError
@@ -22,9 +22,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 class UserView(ListCreateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
-
     
 class LoginView(APIView):
     queryset = Token.objects.all()
@@ -82,6 +81,7 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
             friend_request.accept()
         else:
             friend_request.reject()
+            friend_request.delete()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -103,7 +103,7 @@ class ListPendingRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        friendship_request = Friend.objects.unread_requests(user=request.user)
+        friendship_request = Friend.objects.unrejected_requests(user=request.user)
 
         serializer = PendingRequestsListSerializer(friendship_request, many=True)
     
@@ -123,13 +123,15 @@ class ListFriendsView(APIView):
 
 class UserDetailView(RetrieveUpdateAPIView):
     permission_classes = [IsAdminOwnerOrReadOnly]
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserDetailSerializer
+
+class UserManagementView(RetrieveAPIView):
+    permission_classes = [IsAdminUser]
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
 
-class UserManagementView(UpdateAPIView):
-    permission_classes = [IsAdminOwnerOrReadOnly]
+class UserManagementDetailView(UpdateAPIView):
+    permission_classes = [IsAdminOrOwner]
     queryset = User.objects.all()
     serializer_class = IsActiveSerializer
-
-class FriendShipAddView(APIView):
-    ...
