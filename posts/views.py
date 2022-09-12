@@ -38,8 +38,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
 
     def get_queryset(self):
         category_id = self.kwargs.get('id_category')
-        import ipdb
-        ipdb.set_trace()
         queryset = Post.objects.all()
         if category_id is not None:
             queryset = queryset.filter(category = category_id)
