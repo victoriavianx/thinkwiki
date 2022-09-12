@@ -1,5 +1,6 @@
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
+from categories.models import Categories
 from posts.utils.mixins import SerializerByMethodMixin
 from rest_framework.views import Response, status
 from users.models import User
@@ -33,11 +34,15 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         "POST":PostCreateListSerializer
     }
 
+    lookup_url_kwarg = "id_category"
+
     def get_queryset(self):
-        queryset = Post.objects.all().order_by("-created_at")
-        category = self.request.query_params.get('id_category')
-        if category is not None:
-            queryset = queryset.filter(id=category)
+        category_id = self.kwargs.get('id_category')
+        import ipdb
+        ipdb.set_trace()
+        queryset = Post.objects.all()
+        if category_id is not None:
+            queryset = queryset.filter(category = category_id)
         return queryset
 
     def perform_create(self, serializer):
