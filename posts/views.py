@@ -1,31 +1,24 @@
-from rest_framework import generics
-from rest_framework.authentication import TokenAuthentication
-from posts.utils.mixins import SerializerByMethodMixin
-from rest_framework.views import Response, status
-from users.models import User
-from .models import Comment, Post
-
-from .mixins import SerializerByMethodMixin
-
-from .serializers import CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
-
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-
 from django.shortcuts import get_object_or_404
 
-from posts.permissions import CollabEditorsListPermission, IsOwnerOrReadOnly, IsAdminOrReadOnly, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
-
-from posts.serializers import PostCreateListSerializer, CommentListSerializer
-
+from rest_framework import generics
+from rest_framework.views import Response, status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from posts import serializers
+from utils.mixins import SerializerByMethodMixin
+
+from users.models import User
+from posts.models import Comment, Post
+from categories.models import Categories
+
+from posts.serializers import CommentListSerializer, CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
+
+from posts.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly, LikePermissions, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
 
 
 # Create your views here.
 
 class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
-
     permission_classes = [PostSafeMethodsPermission]
 
     serializer_map = {
@@ -33,11 +26,13 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         "POST":PostCreateListSerializer
     }
 
+    lookup_url_kwarg = "id_category"
+
     def get_queryset(self):
-        queryset = Post.objects.all().order_by("-created_at")
-        category = self.request.query_params.get('id_category')
-        if category is not None:
-            queryset = queryset.filter(category=category)
+        category_id = self.kwargs.get('id_category')
+        queryset = Post.objects.all()
+        if category_id is not None:
+            queryset = queryset.filter(category = category_id)
         return queryset
 
     def perform_create(self, serializer):
@@ -45,7 +40,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
 
 
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
-
     permission_classes = [PostEditPermission]
     serializer_map ={
         "GET": PostCreateListSerializer,
@@ -59,7 +53,6 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
 
     
 class ContribView(generics.UpdateAPIView):
-
     permission_classes = [PostSafeMethodsPermission, PostCollabAdd]
 
     queryset = Post.objects.all()
@@ -93,7 +86,7 @@ class ListUserPostsView(generics.ListAPIView):
 
 
 class RetrieveUserLikedPosts(generics.ListAPIView):
-    permission_classes = [PostSafeMethodsPermission]
+    permission_classes = [LikePermissions]
     serializer_class = PostResumeSerializer
     def get_queryset(self):
         queryset = self.request.user.liked_posts.all()
@@ -101,7 +94,6 @@ class RetrieveUserLikedPosts(generics.ListAPIView):
 
 
 class UpdateUserLikePost(generics.UpdateAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [PostSafeMethodsPermission]
     queryset = Post.objects.all()
     lookup_url_kwarg = "id_post"
@@ -124,7 +116,6 @@ class UpdateUserLikePost(generics.UpdateAPIView):
 
 
 class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     serializer_map = {
@@ -140,12 +131,17 @@ class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs["id_post"])
 
-        return Comment.objects.filter(post=post)
+        return Comment.objects.filter(post=post).order_by("-created_at")
 
 
-class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+class CommentDetailView(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly | IsOwnerOrReadOnly]
 
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
     lookup_url_kwarg = "id_post" and "id_comment"
+
+    serializer_map = {
+        "GET": CommentListSerializer,
+        "PATCH": CommentSerializer,
+        "DELETE": CommentSerializer,
+    }
