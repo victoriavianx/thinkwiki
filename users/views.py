@@ -1,29 +1,32 @@
 
-from ast import NotIn
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView, ListAPIView
 from rest_framework.views import APIView, Request, Response, status
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from users.permissions import IsAdminOrOwner, IsAdminOwnerOrReadOnly
+from utils.mixins import SerializerByMethodMixin
 
 from .models import User
 
-from .serializers import IsActiveSerializer, UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
+from .serializers import IsActiveSerializer, UserListSerializer, UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
+
+from users.permissions import IsAdminOrOwner, IsAdminOwnerOrReadOnly
 
 from friendship.models import Friend, FriendshipRequest
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-import ipdb
-from django.shortcuts import get_object_or_404
+
 from friendship.exceptions import AlreadyExistsError, AlreadyFriendsError
-from django.core.exceptions import ObjectDoesNotExist
 
 
-class UserView(ListCreateAPIView):
+class UserView(SerializerByMethodMixin, ListCreateAPIView):
     queryset = User.objects.filter(is_active=True)
-    serializer_class = UserSerializer
+    serializer_map = {
+        "GET": UserListSerializer,
+        "POST": UserSerializer
+    }
     
 class LoginView(APIView):
     queryset = Token.objects.all()
@@ -44,10 +47,27 @@ class LoginView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({"token": token.key})
+        
+class UserDetailView(SerializerByMethodMixin, RetrieveUpdateAPIView):
+    permission_classes = [IsAdminOwnerOrReadOnly]
+    queryset = User.objects.filter(is_active=True)
+    serializer_map = {
+        "GET": UserDetailSerializer,
+        "PATCH": UserSerializer
+    }
+
+class UserManagementView(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
+
+class UserManagementDetailView(UpdateAPIView):
+    permission_classes = [IsAdminOrOwner]
+    queryset = User.objects.all()
+    serializer_class = IsActiveSerializer
 
 # Views Friend
 class SendFriendRequestView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -64,7 +84,6 @@ class SendFriendRequestView(APIView):
 
 
 class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -99,7 +118,6 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
     
 
 class ListPendingRequestView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -111,7 +129,6 @@ class ListPendingRequestView(APIView):
   
 
 class ListFriendsView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -121,17 +138,3 @@ class ListFriendsView(APIView):
 
         return Response(serializer.data)
 
-class UserDetailView(RetrieveUpdateAPIView):
-    permission_classes = [IsAdminOwnerOrReadOnly]
-    queryset = User.objects.filter(is_active=True)
-    serializer_class = UserDetailSerializer
-
-class UserManagementView(RetrieveAPIView):
-    permission_classes = [IsAdminUser]
-    queryset = User.objects.all()
-    serializer_class = UserDetailSerializer
-
-class UserManagementDetailView(UpdateAPIView):
-    permission_classes = [IsAdminOrOwner]
-    queryset = User.objects.all()
-    serializer_class = IsActiveSerializer
