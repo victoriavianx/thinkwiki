@@ -49,3 +49,12 @@ class UpdateCategorieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = ["id", "name"]
+
+class CategoriesFollowedSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = [
+            "id",
+            "name"
+        ]
