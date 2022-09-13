@@ -134,9 +134,14 @@ class CommentView(SerializerByMethodMixin, generics.ListCreateAPIView):
         return Comment.objects.filter(post=post).order_by("-created_at")
 
 
-class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+class CommentDetailView(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly | IsOwnerOrReadOnly]
 
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
     lookup_url_kwarg = "id_post" and "id_comment"
+
+    serializer_map = {
+        "GET": CommentListSerializer,
+        "PATCH": CommentSerializer,
+        "DELETE": CommentSerializer,
+    }
