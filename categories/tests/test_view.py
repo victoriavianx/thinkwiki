@@ -59,8 +59,11 @@ class TestCategoryAuth(APITestCase):
 
         category_1 = Categories.objects.create(**category_data_2)
 
+       
+        cls.base_category_follow_url = reverse("category-follow-view")
         cls.base_category_url = reverse("category-view")
         cls.base_category_detail_url = reverse("category-detail-view", kwargs={"id_category": category_1.id})
+        cls.base_category_follow_detail_url = reverse("category-follow-detail-view", kwargs={"id_category": category_1.id})
 
     
     def test_common_user_can_add_category(self):
@@ -222,6 +225,100 @@ class TestCategoryAuth(APITestCase):
         categoryID = "87dfe8aa-9868-4497-bcfb-95489339a683"
 
         response: Response = self.client.delete(categoryID)
+
+        expected_status_code = status.HTTP_404_NOT_FOUND
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+
+
+    def test_common_user_can_list_category_followed(self):
+        print("test_common_user_can_list_category_followed")
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.common_token.key)
+       
+        response: Response = self.client.get(
+            self.base_category_follow_url
+        )
+
+        expected_status_code = status.HTTP_200_OK
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+
+
+    def test_unauthenticated_user_can_list_category_followed(self):
+        print("test_unauthenticated_user_can_list_category_followed")
+       
+        response: Response = self.client.get(
+            self.base_category_follow_url
+        )
+
+        expected_status_code = status.HTTP_401_UNAUTHORIZED
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+
+
+    def test_user_can_followed_categories(self):
+        print("test_user_can_followed_categories")
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.common_token.key)
+        response: Response = self.client.patch(
+            self.base_category_follow_detail_url
+        )
+
+        expected_status_code = status.HTTP_204_NO_CONTENT
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+    
+
+    
+    def test_user_can_followed_categories_not_exist(self):
+        print("test_user_can_followed_categories_not_exist")
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.common_token.key)
+        
+        categoryID = "87dfe8aa-9868-4497-bcfb-95489339a683"
+
+        response: Response = self.client.patch(
+            categoryID
+        )
+
+        expected_status_code = status.HTTP_404_NOT_FOUND
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+
+
+    def test_user_can_unfollowed_categories(self):
+        print("test_user_can_unfollowed_categories")
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.common_token.key)
+        response: Response = self.client.patch(
+            self.base_category_follow_detail_url
+        )
+
+        response: Response = self.client.patch(
+            self.base_category_follow_detail_url
+        )
+
+        expected_status_code = status.HTTP_204_NO_CONTENT
+        result_status_code = response.status_code
+
+        self.assertEqual(expected_status_code, result_status_code)
+
+
+    
+    def test_user_can_unfollowed_categories_not_exist(self):
+        print("test_user_can_unfollowed_categories")
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.common_token.key)
+        response: Response = self.client.patch(
+            self.base_category_follow_detail_url
+        )
+
+        categoryID = "87dfe8aa-9868-4497-bcfb-95489339a683"
+
+        response: Response = self.client.patch(
+           categoryID
+        )
 
         expected_status_code = status.HTTP_404_NOT_FOUND
         result_status_code = response.status_code

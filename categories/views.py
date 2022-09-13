@@ -4,14 +4,13 @@ from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+from categories.mixins import SerializerByMethodMixin
 from categories.models import Categories
 from categories.permissions import IsAdminOrReadOnly, IsOwner
 from categories.serializers import (CreateCategorieSerializer,
                                     ListCategorieSerializer,
                                     ListDetailCategoireSereliazer,
                                     UpdateCategorieSerializer)
-
-from categories.mixins import SerializerByMethodMixin
 
 
 class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIView):
@@ -43,7 +42,7 @@ class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPI
 
 
 class RetrieveUserCategoryFollowed(generics.ListAPIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated,IsOwner]
     def get_queryset(self):
         queryset = self.request.user.followed_categories
         # ipdb.set_trace()
@@ -51,7 +50,7 @@ class RetrieveUserCategoryFollowed(generics.ListAPIView):
 
 
 class UpdateUserCategoryFollowed(generics.UpdateAPIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated,IsOwner]
 
     lookup_url_kwarg = "id_category"
 
