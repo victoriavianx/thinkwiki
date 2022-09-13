@@ -1,5 +1,5 @@
 
-from ast import NotIn
+
 from django.contrib.auth import authenticate
 
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
@@ -47,7 +47,7 @@ class LoginView(APIView):
         return Response({"token": token.key})
 
 # Views Friend
-class SendFriendRequestView(APIView):
+class SendFriendRequestAndDeleteFriendshipView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -63,8 +63,19 @@ class SendFriendRequestView(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+    def delete(self, request: Request, id_friend: str) -> Response:
+        listFriends = Friend.objects.friends(request.user)
+        friend = get_object_or_404(User, id=id_friend)
 
-class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
+        if not friend in listFriends:
+            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
+            
+        Friend.objects.remove_friend(request.user, friend)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AcceptOrRejectFriendRequestView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -82,21 +93,10 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
             friend_request.accept()
         else:
             friend_request.reject()
-
-        return Response(status=status.HTTP_200_OK)
-
-
-    def delete(self, request: Request, id_friend: str) -> Response:
-        listFriends = Friend.objects.friends(request.user)
-        friend = get_object_or_404(User, id=id_friend)
-
-        if not friend in listFriends:
-            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
-            
-        Friend.objects.remove_friend(request.user, friend)
+            friend_request.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 
 class ListPendingRequestView(APIView):
     authentication_classes = [TokenAuthentication]
