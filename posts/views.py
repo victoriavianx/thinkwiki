@@ -1,32 +1,24 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import generics
-from rest_framework.authentication import TokenAuthentication
-from categories.models import Categories
-from posts.utils.mixins import SerializerByMethodMixin
 from rest_framework.views import Response, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from utils.mixins import SerializerByMethodMixin
+
 from users.models import User
 from posts.models import Comment, Post
-
-from posts.mixins import SerializerByMethodMixin
+from categories.models import Categories
 
 from posts.serializers import CommentListSerializer, CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
 
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-
-from django.shortcuts import get_object_or_404
-
 from posts.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly, LikePermissions, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
-
-from posts.serializers import PostCreateListSerializer, CommentListSerializer
-
-from rest_framework.response import Response
-
-
 
 
 # Create your views here.
 
 class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
-
     permission_classes = [PostSafeMethodsPermission]
 
     serializer_map = {
@@ -48,7 +40,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
 
 
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
-
     permission_classes = [PostEditPermission]
     serializer_map ={
         "GET": PostCreateListSerializer,
@@ -62,7 +53,6 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
 
     
 class ContribView(generics.UpdateAPIView):
-
     permission_classes = [PostSafeMethodsPermission, PostCollabAdd]
 
     queryset = Post.objects.all()
@@ -96,7 +86,6 @@ class ListUserPostsView(generics.ListAPIView):
 
 
 class RetrieveUserLikedPosts(generics.ListAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [LikePermissions]
     serializer_class = PostResumeSerializer
     def get_queryset(self):
@@ -105,7 +94,6 @@ class RetrieveUserLikedPosts(generics.ListAPIView):
 
 
 class UpdateUserLikePost(generics.UpdateAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [PostSafeMethodsPermission]
     queryset = Post.objects.all()
     lookup_url_kwarg = "id_post"
