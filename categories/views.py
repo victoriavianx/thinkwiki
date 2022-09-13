@@ -43,13 +43,14 @@ class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPI
     lookup_url_kwarg = "id_category"
 
 
+
 class RetrieveUserCategoryFollowed(SerializerByMethodMixin,generics.ListAPIView):
     permission_classes = [IsOwner]
 
     serializer_map = {
         "GET":  CategoriesFollowedSerializer
     }
-
+    
     def get_queryset(self):
         queryset = self.request.user.followed_categories.all()
         # ipdb.set_trace()
@@ -58,7 +59,7 @@ class RetrieveUserCategoryFollowed(SerializerByMethodMixin,generics.ListAPIView)
 
 
 class UpdateUserCategoryFollowed(generics.UpdateAPIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated,IsOwner]
 
     queryset = Categories.objects.all()
 
