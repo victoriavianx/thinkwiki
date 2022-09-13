@@ -112,19 +112,7 @@ class AcceptOrRejectFriendRequestView(APIView):
             friend_request.reject()
             friend_request.delete()
 
-        return Response(status=status.HTTP_200_OK)
-
-
-    def delete(self, request: Request, id_friend: str) -> Response:
-        listFriends = Friend.objects.friends(request.user)
-        friend = get_object_or_404(User, id=id_friend)
-
-        if not friend in listFriends:
-            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
-            
-        Friend.objects.remove_friend(request.user, friend)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)        
 
 
 class ListPendingRequestView(APIView):
