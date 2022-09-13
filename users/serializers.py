@@ -1,4 +1,3 @@
-from dataclasses import fields
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -25,6 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+class UserListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        exclude = ["is_staff", "groups", "user_permissions"]
+        read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 class UserDetailSerializer(serializers.ModelSerializer):
 
@@ -37,20 +43,24 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "is_superuser",
+            "is_active",
+            "followed_categories",
             "posts",
-            "user_comments",
             "collab_posts",
             "liked_posts",
+            "user_comments",
             "date_joined",
             "last_login"
         ]
         read_only_fields = [
             "id",
             "is_superuser",
+            "is_active",
+            "followed_categories",
             "posts",
-            "user_comments",
             "collab_posts",
             "liked_posts",
+            "user_comments",
             "date_joined",
             "last_login"
         ]
@@ -83,6 +93,7 @@ class IsActiveSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "is_superuser",
+            "followed_categories",
             "posts",
             "user_comments",
             "collab_posts",
