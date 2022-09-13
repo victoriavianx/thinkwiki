@@ -1,4 +1,3 @@
-
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -67,7 +66,7 @@ class UserManagementDetailView(UpdateAPIView):
     serializer_class = IsActiveSerializer
 
 # Views Friend
-class SendFriendRequestView(APIView):
+class SendFriendRequestAndDeleteFriendshipView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -82,8 +81,19 @@ class SendFriendRequestView(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+    def delete(self, request: Request, id_friend: str) -> Response:
+        listFriends = Friend.objects.friends(request.user)
+        friend = get_object_or_404(User, id=id_friend)
 
-class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
+        if not friend in listFriends:
+            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
+            
+        Friend.objects.remove_friend(request.user, friend)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AcceptOrRejectFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -115,7 +125,7 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
         Friend.objects.remove_friend(request.user, friend)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 
 class ListPendingRequestView(APIView):
     permission_classes = [IsAuthenticated]
