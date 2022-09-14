@@ -15,7 +15,7 @@ class UserModelTest(TestCase):
             "email": "victoria@email.com"
         }
 
-        cls.user = User.objects.create(**cls.user_data)
+        cls.user = User.objects.create_user(**cls.user_data)
 
     def test_unique_constraints_in_username_and_email_fields(self):
         print("test_unique_constraints_in_username_and_email_fields")
@@ -38,3 +38,4 @@ class UserModelTest(TestCase):
         self.assertEqual(self.user.email, self.user_data["email"])
         self.assertEqual(self.user.first_name, self.user_data["first_name"])
         self.assertEqual(self.user.last_name, self.user_data["last_name"])
+        self.assertTrue(self.user.check_password(self.user_data["password"]))

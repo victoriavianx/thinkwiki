@@ -1,11 +1,11 @@
 from django.shortcuts import get_object_or_404
-from posts.models import Post
+
 from rest_framework import generics
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView, Request, Response, status
 
-from categories.mixins import SerializerByMethodMixin
+from utils.mixins import SerializerByMethodMixin
+
 from categories.models import Categories
 from categories.permissions import IsAdminOrReadOnly, IsOwner
 from categories.serializers import (CategoriesFollowedSerializer,
@@ -26,7 +26,6 @@ class ListCreateCategoriesView(SerializerByMethodMixin, generics.ListCreateAPIVi
         "POST": CreateCategorieSerializer,
     }
 
-
 class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
     
     permission_classes = [IsAdminOrReadOnly]
@@ -42,8 +41,6 @@ class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPI
     
     lookup_url_kwarg = "id_category"
 
-
-
 class RetrieveUserCategoryFollowed(SerializerByMethodMixin,generics.ListAPIView):
     permission_classes = [IsOwner]
 
@@ -53,10 +50,8 @@ class RetrieveUserCategoryFollowed(SerializerByMethodMixin,generics.ListAPIView)
     
     def get_queryset(self):
         queryset = self.request.user.followed_categories.all()
-        # ipdb.set_trace()
+        
         return queryset
-
-
 
 class UpdateUserCategoryFollowed(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated,IsOwner]
@@ -80,6 +75,3 @@ class UpdateUserCategoryFollowed(generics.UpdateAPIView):
             category.categories_followed.add(user)
         else:
             category.categories_followed.remove(user)
-
-
-   
