@@ -7,8 +7,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 
-
-
 class PostCreateListViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
@@ -51,10 +49,8 @@ class PostCreateListViewTest(APITestCase):
         }
 
         cls.missing_post_template = {
-            "title": "Teste",
             "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-            "is_editable":True,
-            "category": "3c0b61b6-a1b4-419c-9480-04e60aaaa0b9"
+            "category":cls.category_create.id
         }
 
         cls.base_url = '/api/posts/'
@@ -100,13 +96,13 @@ class PostCreateListViewTest(APITestCase):
             self.assertIn(expected_field, response.data)
         
         self.assertEqual(response.data['is_editable'], True)
-        self.assertEqual(response.data['category'], self.category_create.id)
+        self.assertEqual(response.data['category']['id'], self.category_create.id.__str__())
 
     def test_fail_create_post(self):
         expected_status_code = 400
 
         expected_return_fields = (
-            "category",   
+            "title",   
         )
 
         response = self.client.post(self.base_url, self.missing_post_template)
