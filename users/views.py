@@ -1,5 +1,4 @@
 
-from ast import NotIn
 from django.contrib.auth import authenticate
 
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView
@@ -19,6 +18,7 @@ import ipdb
 from django.shortcuts import get_object_or_404
 from friendship.exceptions import AlreadyExistsError, AlreadyFriendsError
 from django.core.exceptions import ObjectDoesNotExist
+
 
 
 class UserView(ListCreateAPIView):

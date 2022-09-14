@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+
+
 # Create your models here.
 
 
@@ -36,3 +38,6 @@ class Comment(models.Model):
     comment = models.TextField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
