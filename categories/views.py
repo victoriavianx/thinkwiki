@@ -1,9 +1,7 @@
 from django.shortcuts import get_object_or_404
-
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView, Request, Response, status
-
 from utils.mixins import SerializerByMethodMixin
 
 from categories.models import Categories
@@ -42,7 +40,7 @@ class ListDetailViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPI
     lookup_url_kwarg = "id_category"
 
 class RetrieveUserCategoryFollowed(SerializerByMethodMixin,generics.ListAPIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated,IsOwner]
 
     serializer_map = {
         "GET":  CategoriesFollowedSerializer
