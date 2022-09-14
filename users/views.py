@@ -112,7 +112,7 @@ class AcceptOrRejectFriendRequestView(APIView):
             friend_request.reject()
             friend_request.delete()
 
-        return Response(status=status.HTTP_200_OK)        
+        return Response(status=status.HTTP_204_NO_CONTENT)        
 
 
 class ListPendingRequestView(APIView):
