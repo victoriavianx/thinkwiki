@@ -31,12 +31,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['thinkwiki.herokuapp.com', 'localhost']
 
+ALLOWED_HOSTS = ['127.0.0.1', 'thinkwiki.herokuapp.com', 'localhost']
 
 # Application definition
-
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -163,3 +161,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')

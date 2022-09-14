@@ -1,7 +1,7 @@
 from rest_framework import permissions
 from rest_framework.views import Request, View
-
 from users.models import User
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
@@ -14,4 +14,4 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request: Request, view: View, user: User):
         
-        return request.user == user
+        return request.user 

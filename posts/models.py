@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+
+
 # Create your models here.
 
 
@@ -22,17 +24,20 @@ class Post(models.Model):
     post_likes = models.ManyToManyField(
         "users.User", related_name="liked_posts"
     )
-    post_comments = models.ManyToManyField(
-        "users.User",
-        through="posts.Comment",
-        related_name="comments_posts"
-    )
+    # post_comments = models.ManyToManyField(
+    #     "users.User",
+    #     through="posts.Comment",
+    #     related_name="comments_posts"
+    # )
 
 
 class Comment(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE)
-    comment = models.TextField()
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="user_comments")
+    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE, related_name="post_comments")
+    comment = models.TextField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+

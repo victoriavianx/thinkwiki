@@ -1,4 +1,3 @@
-from dataclasses import fields
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -16,8 +15,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        exclude = ["is_staff", "groups", "user_permissions"]
-        read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
+        exclude = ["is_active", "is_staff", "groups", "user_permissions"]
+        read_only_fields = ["id", "date_joined", "is_superuser", "last_login"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data: dict) -> User:
@@ -25,6 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+class UserListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        exclude = ["is_staff", "groups", "user_permissions"]
+        read_only_fields = ["id", "date_joined", "is_superuser", "is_active", "last_login"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 class UserDetailSerializer(serializers.ModelSerializer):
 
@@ -36,23 +42,25 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
-            "is_active",
             "is_superuser",
+            "is_active",
+            "followed_categories",
             "posts",
-            "comments_posts",
             "collab_posts",
             "liked_posts",
+            "user_comments",
             "date_joined",
             "last_login"
         ]
         read_only_fields = [
             "id",
-            "is_active",
             "is_superuser",
+            "is_active",
+            "followed_categories",
             "posts",
-            "comments_posts",
             "collab_posts",
             "liked_posts",
+            "user_comments",
             "date_joined",
             "last_login"
         ]
@@ -85,8 +93,9 @@ class IsActiveSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "is_superuser",
+            "followed_categories",
             "posts",
-            "comments_posts",
+            "user_comments",
             "collab_posts",
             "liked_posts",
             "date_joined",

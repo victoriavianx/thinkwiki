@@ -1,30 +1,31 @@
-
-from ast import NotIn
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView, ListAPIView
 from rest_framework.views import APIView, Request, Response, status
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from users.permissions import IsAdminOwnerOrReadOnly
+from utils.mixins import SerializerByMethodMixin
 
 from .models import User
 
-from .serializers import IsActiveSerializer, UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
+from .serializers import IsActiveSerializer, UserListSerializer, UserSerializer, UserDetailSerializer, LoginSerializer, PendingRequestsListSerializer, ReturnOfPendingRequestsList
+
+from users.permissions import IsAdminOrOwner, IsAdminOwnerOrReadOnly
 
 from friendship.models import Friend, FriendshipRequest
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-import ipdb
-from django.shortcuts import get_object_or_404
+
 from friendship.exceptions import AlreadyExistsError, AlreadyFriendsError
-from django.core.exceptions import ObjectDoesNotExist
 
 
-class UserView(ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
+class UserView(SerializerByMethodMixin, ListCreateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_map = {
+        "GET": UserListSerializer,
+        "POST": UserSerializer
+    }
     
 class LoginView(APIView):
     queryset = Token.objects.all()
@@ -45,10 +46,27 @@ class LoginView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({"token": token.key})
+        
+class UserDetailView(SerializerByMethodMixin, RetrieveUpdateAPIView):
+    permission_classes = [IsAdminOwnerOrReadOnly]
+    queryset = User.objects.filter(is_active=True)
+    serializer_map = {
+        "GET": UserDetailSerializer,
+        "PATCH": UserSerializer
+    }
+
+class UserManagementView(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
+
+class UserManagementDetailView(UpdateAPIView):
+    permission_classes = [IsAdminOrOwner]
+    queryset = User.objects.all()
+    serializer_class = IsActiveSerializer
 
 # Views Friend
-class SendFriendRequestView(APIView):
-    authentication_classes = [TokenAuthentication]
+class SendFriendRequestAndDeleteFriendshipView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -63,9 +81,19 @@ class SendFriendRequestView(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+    def delete(self, request: Request, id_friend: str) -> Response:
+        listFriends = Friend.objects.friends(request.user)
+        friend = get_object_or_404(User, id=id_friend)
 
-class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
-    authentication_classes = [TokenAuthentication]
+        if not friend in listFriends:
+            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
+            
+        Friend.objects.remove_friend(request.user, friend)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AcceptOrRejectFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id_friend:str) -> Response:
@@ -82,28 +110,16 @@ class AcceptOrRejectFriendRequestAndDeleteFriend(APIView):
             friend_request.accept()
         else:
             friend_request.reject()
+            friend_request.delete()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)        
 
-
-    def delete(self, request: Request, id_friend: str) -> Response:
-        listFriends = Friend.objects.friends(request.user)
-        friend = get_object_or_404(User, id=id_friend)
-
-        if not friend in listFriends:
-            return Response({"message": "You and this user are no longer friends,"}, status=status.HTTP_404_NOT_FOUND)
-            
-        Friend.objects.remove_friend(request.user, friend)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
 
 class ListPendingRequestView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        friendship_request = Friend.objects.unread_requests(user=request.user)
+        friendship_request = Friend.objects.unrejected_requests(user=request.user)
 
         serializer = PendingRequestsListSerializer(friendship_request, many=True)
     
@@ -111,7 +127,6 @@ class ListPendingRequestView(APIView):
   
 
 class ListFriendsView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -121,15 +136,3 @@ class ListFriendsView(APIView):
 
         return Response(serializer.data)
 
-class UserDetailView(RetrieveUpdateAPIView):
-    permission_classes = [IsAdminOwnerOrReadOnly]
-    queryset = User.objects.all()
-    serializer_class = UserDetailSerializer
-
-class UserManagementView(UpdateAPIView):
-    permission_classes = [IsAdminOwnerOrReadOnly]
-    queryset = User.objects.all()
-    serializer_class = IsActiveSerializer
-
-class FriendShipAddView(APIView):
-    ...
