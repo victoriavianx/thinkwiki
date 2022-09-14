@@ -11,28 +11,34 @@ from users.models import User
 from posts.models import Comment, Post
 from categories.models import Categories
 
-from posts.serializers import CommentListSerializer, CommentSerializer, PostCreateListSerializer, PostDetailSerializer, PostResumeSerializer, PostUpdateSerializer
+from posts.serializers import CommentListSerializer, CommentSerializer, PostCreateSerializer, PostDetailSerializer, PostResumeSerializer, PostSerializer, PostUpdateSerializer
 
 from posts.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly, LikePermissions, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
 
-from posts.serializers import PostCreateListSerializer, CommentListSerializer
+
 
 from rest_framework.response import Response
 from posts.email.notification import Send_notification
-
+from rest_framework.exceptions import ValidationError
 
 
 
 # Create your views here.
 
-class PostCreateListView(generics.ListCreateAPIView):
+class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
 
     permission_classes = [PostSafeMethodsPermission]
     queryset = Post.objects.all()
-    serializer_class = PostCreateListSerializer 
+    serializer_map = {
+        "GET":PostResumeSerializer,
+        "POST":PostCreateSerializer
+        } 
 
     def perform_create(self, serializer):
-        category = get_object_or_404(Categories, id = self.request.data['category'])        
+        if not self.request.data['category']:
+            raise ValidationError
+        category = get_object_or_404(Categories, id = self.request.data['category'])  
+        Send_notification.friend_notification(self.request.user.id)      
         return serializer.save(owner = self.request.user, category=category)
 
 
@@ -56,24 +62,21 @@ class ListByCategoryView(generics.ListAPIView):
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [PostEditPermission]
     serializer_map ={
-        "GET": PostCreateListSerializer,
+        "GET": PostDetailSerializer,
         "POST":PostResumeSerializer,
         "PATCH":PostUpdateSerializer,
-        "DELETE": PostCreateListSerializer,
+        "DELETE": PostCreateSerializer,
     }
     queryset = Post.objects.all()
    
     lookup_url_kwarg = "id_post"
 
     def update(self, request, *args, **kwargs):
-    
+        
 
         return super().update(request, *args, **kwargs)
 
-    def perform_update(self, serializer):
-       
-      
-        return super().perform_update(serializer)
+    
 
     
 class ContribView(generics.UpdateAPIView):

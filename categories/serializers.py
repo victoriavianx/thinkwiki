@@ -33,6 +33,7 @@ class ListCategorieSerializer(serializers.ModelSerializer):
             "id",
             "name",
         ]
+    
 
 
 class ListDetailCategoireSereliazer(serializers.ModelSerializer):
