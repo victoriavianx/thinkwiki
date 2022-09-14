@@ -25,13 +25,23 @@ from posts.email.notification import Send_notification
 
 # Create your views here.
 
-class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
+class PostCreateListView(generics.ListCreateAPIView):
+
+    permission_classes = [PostSafeMethodsPermission]
+    queryset = Post.objects.all()
+    serializer_class = PostCreateListSerializer 
+
+    def perform_create(self, serializer):
+        category = get_object_or_404(Categories, id = self.request.data['category'])        
+        return serializer.save(owner = self.request.user, category=category)
+
+
+
+
+class ListByCategoryView(generics.ListAPIView):
     permission_classes = [PostSafeMethodsPermission]
 
-    serializer_map = {
-        "GET":PostResumeSerializer,
-        "POST":PostCreateListSerializer
-    }
+    serializer_class = PostResumeSerializer
 
     lookup_url_kwarg = "id_category"
 
@@ -41,11 +51,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         if category_id is not None:
             queryset = queryset.filter(category = category_id)
         return queryset
-
-    def perform_create(self, serializer):
-        return_serializer = serializer.save(owner=self.request.user)
-        Send_notification.friend_notification(self.request.user.id)
-        return return_serializer
 
 
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -60,7 +65,14 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
    
     lookup_url_kwarg = "id_post"
 
+    def update(self, request, *args, **kwargs):
+    
+
+        return super().update(request, *args, **kwargs)
+
     def perform_update(self, serializer):
+       
+      
         return super().perform_update(serializer)
 
     
