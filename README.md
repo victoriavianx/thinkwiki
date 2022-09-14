@@ -19,6 +19,10 @@ Buscamos proporcionar entretenimento e informações sobre diversos assuntos.
 - _Python_
 - _Django_
 - _Django Rest-Framework_
+- _Python-Dotenv_
+- _Coverage_
+- _APSchedule_
+- _Friendship_
 - _PostgreSQL_
 
 ## 5. Instalação
