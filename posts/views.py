@@ -37,7 +37,8 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
     def perform_create(self, serializer):
         if not self.request.data['category']:
             raise ValidationError
-        category = get_object_or_404(Categories, id = self.request.data['category'])        
+        category = get_object_or_404(Categories, id = self.request.data['category'])  
+        Send_notification.friend_notification(self.request.user.id)      
         return serializer.save(owner = self.request.user, category=category)
 
 
