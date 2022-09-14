@@ -25,14 +25,21 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
+class PostCreateView(generics.CreateAPIView):
 
     permission_classes = [PostSafeMethodsPermission]
 
-    serializer_map = {
-        "GET":PostResumeSerializer,
-        "POST":PostCreateListSerializer
-    }
+    serializer_class = PostCreateListSerializer 
+
+    def perform_create(self, serializer):
+        category = get_object_or_404(Categories, id = self.request.data['category'])        
+        return serializer.save(owner = self.request.user, category=category)
+
+
+class ListByCategoryView(generics.ListAPIView):
+    permission_classes = [PostSafeMethodsPermission]
+
+    serializer_class = PostResumeSerializer
 
     lookup_url_kwarg = "id_category"
 
@@ -42,9 +49,6 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         if category_id is not None:
             queryset = queryset.filter(category = category_id)
         return queryset
-
-    def perform_create(self, serializer):
-        return serializer.save(owner=self.request.user)
 
 
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):

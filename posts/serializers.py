@@ -1,4 +1,4 @@
-from categories.serializers import CreateCategorieSerializer
+from categories.serializers import CreateCategorieSerializer, ListCategorieSerializer
 from rest_framework import serializers
 
 from posts.models import Post
@@ -17,9 +17,11 @@ class PostCreateListSerializer(serializers.ModelSerializer):
     post_collab = UserResumeSerializer(read_only=True, many=True)
     post_likes = UserResumeSerializer(read_only=True, many=True)
     post_comments = CommentResumeSerializer(read_only=True, many=True)
+    owner = UserResumeSerializer(read_only=True)
     
     class Meta:
         model = Post
+        depth  = 1
         fields = '__all__'
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
 
