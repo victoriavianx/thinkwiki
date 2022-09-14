@@ -86,7 +86,7 @@ PORT=
 
 Faça download com o modelo do insomnia contendo as variáveis de ambiente, todas as rotas e exemplos de requisições.
 
-[Baixe Nosso Workspace no Insomnia](https://insomnia.rest/run?label=ThinkWiki&uri=https%3A%2F%2Finsomnia-thinkwiki.com)
+[Baixe Nosso Workspace no Insomnia](https://drive.google.com/file/d/1ztA2rkn1smnERWa6heANcMzLkie0M2hx/view?usp=sharing)
 
 ---
 
