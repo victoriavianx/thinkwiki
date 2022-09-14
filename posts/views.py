@@ -15,6 +15,13 @@ from posts.serializers import CommentListSerializer, CommentSerializer, PostCrea
 
 from posts.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly, LikePermissions, PostEditPermission, PostSafeMethodsPermission, PostCollabAdd
 
+from posts.serializers import PostCreateListSerializer, CommentListSerializer
+
+from rest_framework.response import Response
+from posts.email.notification import Send_notification
+
+
+
 
 # Create your views here.
 
@@ -36,7 +43,9 @@ class PostCreateListView(SerializerByMethodMixin,generics.ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
-        return serializer.save(owner=self.request.user)
+        return_serializer = serializer.save(owner=self.request.user)
+        Send_notification.friend_notification(self.request.user.id)
+        return return_serializer
 
 
 class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -50,6 +59,9 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
     queryset = Post.objects.all()
    
     lookup_url_kwarg = "id_post"
+
+    def perform_update(self, serializer):
+        return super().perform_update(serializer)
 
     
 class ContribView(generics.UpdateAPIView):

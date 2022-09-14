@@ -1,8 +1,12 @@
+from functools import partial
+from pyexpat import model
 from categories.serializers import CreateCategorieSerializer
 from rest_framework import serializers
 
+
 from posts.models import Post
 from posts.models import Comment
+from users.models import User
 
 from users.serializers import UserSerializer, UserListCommentSerializer, UserDetailSerializer, UserResumeSerializer
 
@@ -17,12 +21,11 @@ class PostCreateListSerializer(serializers.ModelSerializer):
     post_collab = UserResumeSerializer(read_only=True, many=True)
     post_likes = UserResumeSerializer(read_only=True, many=True)
     post_comments = CommentResumeSerializer(read_only=True, many=True)
-    
+    owner = UserResumeSerializer(read_only = True)
     class Meta:
         model = Post
         fields = '__all__'
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
-
    
 class PostDetailSerializer(serializers.ModelSerializer):
     owner = UserDetailSerializer()
@@ -35,12 +38,13 @@ class PostDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
     
 class PostUpdateSerializer(serializers.ModelSerializer):
-
-    category = CreateCategorieSerializer(read_only=True)
+    owner = UserResumeSerializer(read_only = True)
     class Meta:
         model = Post
-        fields = ["id","title", "content", "created_at", "updated_at","category"]
+        fields = ["id","title", "content", "created_at", "updated_at","category", "owner"]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    
         
 class CommentSerializer(serializers.ModelSerializer):
     id_user = UserSerializer(read_only=True)
@@ -72,6 +76,10 @@ class PostResumeSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         return len(obj.post_likes.all())
 
+class UserMailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email"]
 
 
 
