@@ -25,15 +25,17 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-class PostCreateView(generics.CreateAPIView):
+class PostCreateListView(generics.ListCreateAPIView):
 
     permission_classes = [PostSafeMethodsPermission]
-
+    queryset = Post.objects.all()
     serializer_class = PostCreateListSerializer 
 
     def perform_create(self, serializer):
         category = get_object_or_404(Categories, id = self.request.data['category'])        
         return serializer.save(owner = self.request.user, category=category)
+
+
 
 
 class ListByCategoryView(generics.ListAPIView):
@@ -65,8 +67,7 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
     lookup_url_kwarg = "id_post"
 
     def update(self, request, *args, **kwargs):
-        import ipdb
-        ipdb.set_trace() 
+    
 
         return super().update(request, *args, **kwargs)
 

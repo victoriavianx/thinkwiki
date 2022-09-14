@@ -3,7 +3,7 @@ from . import views
 
 
 urlpatterns = [
-    path('posts/', views.PostCreateView.as_view()),
+    path('posts/', views.PostCreateListView.as_view()),
     path('posts/categories/<str:id_category>/', views.ListByCategoryView.as_view()),
     path('posts/users/<str:id_user>/', views.ListUserPostsView.as_view()),
     path('posts/like/', views.RetrieveUserLikedPosts.as_view()),

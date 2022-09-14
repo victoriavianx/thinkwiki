@@ -24,7 +24,7 @@ class PostCreateListSerializer(serializers.ModelSerializer):
     post_likes = UserResumeSerializer(read_only=True, many=True)
     post_comments = CommentResume(read_only=True, many=True)
     owner = UserResumeSerializer(read_only=True)
-    
+        
     class Meta:
         model = Post
         depth  = 1
