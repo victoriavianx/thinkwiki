@@ -2,7 +2,7 @@
 source = .
 omit = 
     venv/*
-    project_base/*
+    thinkwiki/*
     manage.py
 
 [report]
