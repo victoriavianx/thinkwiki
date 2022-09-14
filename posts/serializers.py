@@ -53,13 +53,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
     
 class PostUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Post
         fields = ["id","title", "content", "created_at", "updated_at","category"]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-
 
         
 class CommentSerializer(serializers.ModelSerializer):
