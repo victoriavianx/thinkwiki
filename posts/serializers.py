@@ -1,8 +1,10 @@
 from categories.serializers import CreateCategorieSerializer, ListCategorieSerializer
 from rest_framework import serializers
 
+
 from posts.models import Post
 from posts.models import Comment
+from users.models import User
 
 from users.serializers import UserSerializer, UserListCommentSerializer, UserDetailSerializer, UserResumeSerializer
 
@@ -30,7 +32,6 @@ class PostCreateListSerializer(serializers.ModelSerializer):
         depth  = 1
         fields = '__all__'
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
-
    
 class PostDetailSerializer(serializers.ModelSerializer):
     owner = UserDetailSerializer()
@@ -46,7 +47,7 @@ class PostUpdateSerializer(serializers.ModelSerializer):
     category = CreateCategorieSerializer(read_only=True)
     class Meta:
         model = Post
-        fields = ["id","title", "content", "created_at", "updated_at","category"]
+        fields = ["id","title", "content", "created_at", "updated_at","category", "owner"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     
@@ -81,5 +82,9 @@ class PostResumeSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         return len(obj.post_likes.all())
 
+class UserMailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email"]
 
 
