@@ -21,7 +21,15 @@ class CommentResume(serializers.ModelSerializer):
         fields = ["id", "comment", "user"]
         read_only_fields = ["id", "comment", "user"] 
 
-class PostCreateListSerializer(serializers.ModelSerializer):
+class PostCreateSerializer(serializers.ModelSerializer):
+            
+    class Meta:
+        model = Post
+        depth  = 1
+        fields = ["id","title",  "content", "is_editable", "created_at", "updated_at", "category"]
+        read_only_fields = ["id", "created_at", "updated_at", "owner"]
+
+class PostSerializer(serializers.ModelSerializer):
     post_collab = UserResumeSerializer(read_only=True, many=True)
     post_likes = UserResumeSerializer(read_only=True, many=True)
     post_comments = CommentResume(read_only=True, many=True)
@@ -34,27 +42,29 @@ class PostCreateListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
    
 class PostDetailSerializer(serializers.ModelSerializer):
-    owner = UserDetailSerializer()
+    owner = UserResumeSerializer()
     post_collab = UserResumeSerializer(read_only=True, many=True)
     post_likes = UserResumeSerializer(read_only=True, many=True)
     category = CreateCategorieSerializer(read_only=True)
+
     class Meta:
         model = Post
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at", "owner", "post_collab", "post_likes"]
     
 class PostUpdateSerializer(serializers.ModelSerializer):
-    category = CreateCategorieSerializer(read_only=True)
+
     class Meta:
         model = Post
-        fields = ["id","title", "content", "created_at", "updated_at","category", "owner"]
+        fields = ["id","title", "content", "created_at", "updated_at","category"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    
+
+
         
 class CommentSerializer(serializers.ModelSerializer):
     id_user = UserSerializer(read_only=True)
-    id_post = PostCreateListSerializer(read_only=True)
+    id_post = PostSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -64,7 +74,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CommentListSerializer(serializers.ModelSerializer):
     user = UserListCommentSerializer(read_only=True)
-    id_post = PostCreateListSerializer(read_only=True)
+    id_post = PostSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -73,11 +83,12 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 class PostResumeSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField(read_only=True)
-    post_collab = UserResumeSerializer(read_only=True, many=True)
     category = CreateCategorieSerializer(read_only=True)
+    owner = UserResumeSerializer(read_only=True)
+    
     class Meta:
         model = Post
-        fields = ['id', 'title', 'updated_at', 'created_at', 'post_collab', 'category', 'likes']
+        fields = ['id', 'title', 'updated_at', 'created_at', 'category', 'likes', 'owner']
     
     def get_likes(self, obj):
         return len(obj.post_likes.all())
