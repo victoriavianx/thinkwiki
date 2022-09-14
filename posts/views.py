@@ -64,6 +64,17 @@ class PostRetrieveEditDeleteViews(SerializerByMethodMixin, generics.RetrieveUpda
    
     lookup_url_kwarg = "id_post"
 
+    def update(self, request, *args, **kwargs):
+        import ipdb
+        ipdb.set_trace() 
+
+        return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+       
+      
+        return super().perform_update(serializer)
+
     
 class ContribView(generics.UpdateAPIView):
 

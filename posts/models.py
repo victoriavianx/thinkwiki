@@ -22,11 +22,7 @@ class Post(models.Model):
     post_likes = models.ManyToManyField(
         "users.User", related_name="liked_posts"
     )
-    # post_comments = models.ManyToManyField(
-    #     "users.User",
-    #     through="posts.Comment",
-    #     related_name="comments_posts"
-    # )
+
 
 
 class Comment(models.Model):
